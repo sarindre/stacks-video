@@ -1,0 +1,107 @@
+# Builds the desktop app for Windows, macOS and Linux, plus the itch.io browser package.
+#
+# - Run it by hand (Actions -> Desktop app -> Run workflow) to get the installers as downloadable
+#   "artifacts" without publishing anything.
+# - Push a version tag (git tag v0.1.0 && git push origin v0.1.0) to also publish them on a
+#   GitHub Release, and (once configured) to push them to itch.io.
+#
+# The installers are not code-signed, so Windows SmartScreen and macOS Gatekeeper will warn on
+# first run (see the README for how to open them).
+name: Desktop app
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx electron-builder --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false" # no signing certificate: skip looking for one
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StacksVideo-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            release/*.exe
+            release/*.dmg
+            release/*.AppImage
+
+  # The ZIP for itch.io's in-browser player (see docs/ITCH.md). npm run pack:itch fails if the build
+  # would not work from a sub-folder or loads anything from the network at start-up.
+  html5:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run pack:itch
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StacksVideo-html5
+          if-no-files-found: error
+          path: release/*.zip
+
+  release:
+    needs: [build, html5]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: installers/*
+          generate_release_notes: true
+
+  # Pushes everything to itch.io (see docs/ITCH.md). It does nothing until you add the BUTLER_API_KEY
+  # secret and the ITCH_TARGET variable (for example "yourname/stacks-video"), so the workflow stays
+  # green without them.
+  itch:
+    needs: [build, html5]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      ITCH_TARGET: ${{ vars.ITCH_TARGET }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+      - name: Push to itch.io
+        run: |
+          if [ -z "$BUTLER_API_KEY" ] || [ -z "$ITCH_TARGET" ]; then
+            echo "BUTLER_API_KEY or ITCH_TARGET not set; skipping itch.io."
+            exit 0
+          fi
+          curl -fsSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler-bin
+          chmod +x butler-bin/butler
+          version="${GITHUB_REF_NAME#v}"
+          ./butler-bin/butler push installers/StacksVideo-windows-latest "$ITCH_TARGET:windows" --userversion "$version"
+          ./butler-bin/butler push installers/StacksVideo-macos-latest "$ITCH_TARGET:mac" --userversion "$version"
+          ./butler-bin/butler push installers/StacksVideo-ubuntu-latest "$ITCH_TARGET:linux" --userversion "$version"
+          ./butler-bin/butler push installers/StacksVideo-html5 "$ITCH_TARGET:html5" --userversion "$version"

@@ -11,7 +11,14 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "migrate:legacy": "node scripts/migrate-legacy.mjs"
+    "migrate:legacy": "node scripts/migrate-legacy.mjs",
+    "licenses": "node scripts/third-party-notices.mjs",
+    "pack:itch": "npm run build && node scripts/pack-itch.mjs",
+    "store-assets": "node scripts/store-assets.mjs",
+    "desktop": "npm run build && node scripts/run-desktop.mjs",
+    "desktop:pack": "npm run build && electron-builder --dir",
+    "desktop:dist": "npm run build && electron-builder --publish never",
+    "audit:desktop": "node scripts/verify-desktop.mjs"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",
@@ -26,9 +33,75 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "fflate": "^0.8.3",
+    "puppeteer-core": "^25.12.0",
     "tailwindcss": "^4.1.16",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
     "vitest": "^3.2.4"
+  },
+  "main": "electron/main.cjs",
+  "author": "sarindre",
+  "homepage": "https://github.com/sarindre/Blockbuster-App",
+  "build": {
+    "appId": "com.sarindre.stacksvideo",
+    "productName": "Stacks Video",
+    "copyright": "Stacks Video",
+    "artifactName": "StacksVideo-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!node_modules/**/*"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Stacks Video uses the camera only to read barcodes when you press Scan. Nothing is recorded or sent anywhere."
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    },
+    "electronLanguages": [
+      "en-US"
+    ]
   }
 }
