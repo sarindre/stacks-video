@@ -6,6 +6,8 @@ import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const pkg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
+
 // After a build, list every file in dist and write the list (plus a fingerprint of the
 // build) into dist/sw.js so the service worker can store the whole app and work offline.
 function offlineManifest(): Plugin {
@@ -39,6 +41,7 @@ function offlineManifest(): Plugin {
 export default defineConfig({
   // GitHub Pages serves the app under /<repo>/; the deploy workflow sets BASE_PATH.
   base: process.env.BASE_PATH || './',
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [react(), tailwindcss(), offlineManifest()],
   test: {
     environment: 'node',

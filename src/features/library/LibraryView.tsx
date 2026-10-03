@@ -1,7 +1,8 @@
 import { useDeferredValue, useMemo, useState } from 'react'
-import { CheckSquare, Layers, LayoutGrid, List, Plus, Search, SlidersHorizontal, Upload } from 'lucide-react'
+import { CheckSquare, Layers, Sparkles, LayoutGrid, List, Plus, Search, SlidersHorizontal, Upload } from 'lucide-react'
 import { CATEGORIES, CATEGORY_ORDER, formatLabel } from '../../lib/catalog'
 import { price } from '../../lib/format'
+import { sampleItems } from '../../lib/sampleData'
 import { DEFAULT_FILTERS, distinct, filterItems, sortAndGroup, type Filters, type GroupKey, type SortKey } from '../../lib/filters'
 import type { Item, Status } from '../../lib/types'
 import { useLibrary } from '../../hooks/useLibrary'
@@ -24,7 +25,7 @@ interface Props {
 }
 
 export function LibraryView({ status, onOpen, onAdd, onImport }: Props) {
-  const { items, removeMany } = useLibrary()
+  const { items, removeMany, planImport, applyImport } = useLibrary()
   const [selecting, setSelecting] = useState(false)
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
   const [editing, setEditing] = useState(false)
@@ -104,6 +105,11 @@ export function LibraryView({ status, onOpen, onAdd, onImport }: Props) {
           {status === 'owned' && (
             <button className={btnSecondary} onClick={onImport}>
               <Upload size={16} /> Import a backup or CSV
+            </button>
+          )}
+          {status === 'owned' && items.length === 0 && (
+            <button className={btnSecondary} onClick={() => applyImport(planImport(sampleItems()))}>
+              <Sparkles size={16} /> Try a sample collection
             </button>
           )}
         </div>

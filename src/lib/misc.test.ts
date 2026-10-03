@@ -20,8 +20,12 @@ describe('dates', () => {
 
 describe('settings', () => {
   it('survives garbage', () => {
-    expect(normalizeSettings(null)).toEqual({ tmdbToken: '', rawgKey: '', loanDays: 30, theme: 'system', lastBackupAt: null })
-    expect(normalizeSettings({ tmdbToken: ' abc ', rawgKey: ' k ', lastBackupAt: 'nope' })).toEqual({ tmdbToken: 'abc', rawgKey: 'k', loanDays: 30, theme: 'system', lastBackupAt: null })
+    expect(normalizeSettings(null)).toEqual({ tmdbToken: '', rawgKey: '', loanDays: 30, theme: 'system', dismissedNotices: [], lastBackupAt: null })
+    expect(normalizeSettings({ tmdbToken: ' abc ', rawgKey: ' k ', lastBackupAt: 'nope' })).toEqual({ tmdbToken: 'abc', rawgKey: 'k', loanDays: 30, theme: 'system', dismissedNotices: [], lastBackupAt: null })
+  })
+  it('keeps only text ids for dismissed notices', () => {
+    expect(normalizeSettings({ dismissedNotices: ['embedded', 3, 'embedded', null] }).dismissedNotices).toEqual(['embedded'])
+    expect(normalizeSettings({ dismissedNotices: 'x' }).dismissedNotices).toEqual([])
   })
   it('only accepts known themes', () => {
     expect(normalizeSettings({ theme: 'light' }).theme).toBe('light')

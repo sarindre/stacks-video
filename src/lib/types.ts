@@ -73,5 +73,7 @@ export interface Settings {
   /** Remind about loans out this many days; 0 turns reminders off. */
   loanDays: number
   theme: ThemePref
+  /** Ids of one-time notices the person has dismissed (see lib/environment.ts). */
+  dismissedNotices: string[]
   lastBackupAt: string | null
 }

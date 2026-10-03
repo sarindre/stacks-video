@@ -11,6 +11,7 @@ import type { Item } from '../../lib/types'
 import { useLibrary } from '../../hooks/useLibrary'
 import { btnPrimary, btnSecondary, Dialog } from '../../components/ui'
 import { ScreenHelp } from '../../components/ScreenHelp'
+import { TmdbCredit } from '../../components/Attribution'
 
 export function SeriesDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
@@ -246,7 +247,7 @@ function Series() {
           </li>
         ))}
       </ul>
-      <p className="text-xs text-mute">Franchise data from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+      <TmdbCredit />
     </div>
   )
 }

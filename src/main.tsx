@@ -7,6 +7,7 @@ import './index.css'
 import App from './App'
 import { AutoBackupProvider } from './hooks/useAutoBackup'
 import { LibraryProvider } from './hooks/useLibrary'
+import { isDesktopApp } from './lib/desktop'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,7 +19,8 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// The desktop app is already installed and works offline, and its custom address can't host a worker.
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isDesktopApp()) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined)
   })

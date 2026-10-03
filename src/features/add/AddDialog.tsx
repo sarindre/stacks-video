@@ -9,6 +9,7 @@ import type { Category, Item, Status } from '../../lib/types'
 import { useLibrary } from '../../hooks/useLibrary'
 import { btnPrimary, btnSecondary, chip, Cover, Dialog } from '../../components/ui'
 import { ScreenHelp } from '../../components/ScreenHelp'
+import { TmdbCredit } from '../../components/Attribution'
 import { ItemForm } from '../library/ItemForm'
 import { BarcodeScanner, canScan } from './BarcodeScanner'
 
@@ -229,6 +230,7 @@ function AddFlow({ status, onDone, prefill, initialQuery, initialCategory }: { s
         </p>
       )}
 
+      {(category === 'movie' || category === 'tv') && <TmdbCredit compact />}
       {category === 'game' && (
         <p className="text-xs text-mute">
           Game data from{' '}

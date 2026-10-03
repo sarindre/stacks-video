@@ -6,7 +6,7 @@ export const SETTINGS_KEY = 'shelfkeeper.settings.v1'
 
 export const DEFAULT_LOAN_DAYS = 30
 
-export const DEFAULT_SETTINGS: Settings = { tmdbToken: '', rawgKey: '', loanDays: DEFAULT_LOAN_DAYS, theme: 'system', lastBackupAt: null }
+export const DEFAULT_SETTINGS: Settings = { tmdbToken: '', rawgKey: '', loanDays: DEFAULT_LOAN_DAYS, theme: 'system', dismissedNotices: [], lastBackupAt: null }
 
 export function normalizeSettings(raw: unknown): Settings {
   const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
@@ -16,6 +16,7 @@ export function normalizeSettings(raw: unknown): Settings {
     rawgKey: typeof r.rawgKey === 'string' ? r.rawgKey.trim() : '',
     loanDays: typeof r.loanDays === 'number' && Number.isFinite(r.loanDays) ? Math.min(365, Math.max(0, Math.round(r.loanDays))) : DEFAULT_LOAN_DAYS,
     theme: isThemePref(r.theme) ? r.theme : 'system',
+    dismissedNotices: Array.isArray(r.dismissedNotices) ? [...new Set(r.dismissedNotices.filter((x): x is string => typeof x === 'string'))] : [],
     lastBackupAt: last,
   }
 }

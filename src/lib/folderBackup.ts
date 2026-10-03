@@ -1,3 +1,4 @@
+import { readEnv } from './environment'
 import { datedBackupName, datedBackupsToDelete, KEEP_DATED_BACKUPS, LATEST_BACKUP_NAME } from './backup'
 
 // Automatic backups to a folder you choose, using the File System Access API (Chrome, Edge
@@ -20,8 +21,10 @@ export interface DirHandle {
 
 type PickerWindow = { showDirectoryPicker?: (o: { id: string; mode: 'readwrite' }) => Promise<DirHandle> }
 
+// Browsers refuse the folder picker inside a frame on another site (itch.io's player, for one), so
+// there it is treated as unavailable rather than offered and then failing.
 export const supportsFolderBackup = (): boolean =>
-  typeof window !== 'undefined' && typeof (window as PickerWindow).showDirectoryPicker === 'function' && typeof indexedDB !== 'undefined'
+  typeof window !== 'undefined' && typeof (window as PickerWindow).showDirectoryPicker === 'function' && typeof indexedDB !== 'undefined' && !readEnv().crossOrigin
 
 export const pickFolder = (): Promise<DirHandle> => (window as PickerWindow).showDirectoryPicker!({ id: 'stacks-video-backups', mode: 'readwrite' })
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { BarChart3, BookOpen, Bookmark, CircleHelp, Library, Plus, ScanSearch, Settings as Gear, TriangleAlert, Rewind } from 'lucide-react'
 import type { Category, Item, Status } from './lib/types'
 import { overdueLoans, loanLabel } from './lib/loans'
+import { noticesFor, readEnv } from './lib/environment'
 import { applyTheme, watchSystemTheme } from './lib/theme'
 import { backupDue } from './lib/settings'
 import { useAutoBackup } from './hooks/useAutoBackup'
@@ -29,7 +30,7 @@ const TABS: { id: Tab; label: string; icon: typeof Library }[] = [
 ]
 
 export default function App() {
-  const { items, settings, saveFailed, undo, undoLabel } = useLibrary()
+  const { items, settings, saveFailed, undo, undoLabel, updateSettings } = useLibrary()
   const auto = useAutoBackup()
   const [tab, setTab] = useState<Tab>('collection')
   const [adding, setAdding] = useState(false)
@@ -50,6 +51,7 @@ export default function App() {
   const showBackup = tab !== 'settings' && !saveFailed && !auto.active && auto.status !== 'loading' && backupDue(settings.lastBackupAt, items.length)
   const status = tab === 'wishlist' ? 'wishlist' : 'owned'
   const [loansDismissed, setLoansDismissed] = useState(false)
+  const notice = useMemo(() => noticesFor(readEnv()).find((n) => !settings.dismissedNotices.includes(n.id)), [settings.dismissedNotices])
 
   // Apply the chosen theme, and follow the device if the choice is "match my device".
   useEffect(() => {
@@ -108,6 +110,14 @@ export default function App() {
           <span>
             Your browser would not save the last change (storage may be full or blocked). Export a backup from Settings so nothing is lost.
           </span>
+        </p>
+      )}
+      {notice && (
+        <p role="note" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-surface p-3 text-sm text-mute">
+          <span className="min-w-0 flex-1">{notice.text}</span>
+          <button className="text-accent underline-offset-2 hover:underline" onClick={() => updateSettings({ dismissedNotices: [...settings.dismissedNotices, notice.id] })}>
+            Got it
+          </button>
         </p>
       )}
       {overdue.length > 0 && !loansDismissed && (

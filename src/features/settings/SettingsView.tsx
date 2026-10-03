@@ -1,15 +1,19 @@
-import { useRef, useState, type ReactNode } from 'react'
-import { Download, FileUp, FolderSync, ImageDown, Printer, Trash2 } from 'lucide-react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { ClipboardPaste, Download, FileUp, FolderSync, ImageDown, Printer, Trash2 } from 'lucide-react'
 import { csvToItems, itemsToCsv } from '../../lib/csv'
 import { dayKey, formatDay } from '../../lib/dates'
 import { THEME_PREFS } from '../../lib/theme'
 import { matchCovers, needsCover, type EnrichProgress } from '../../lib/enrich'
 import { keysOf } from '../../lib/settings'
-import { validateImport, type ImportPlan } from '../../lib/library'
+import { buildExport, validateImport, type ImportPlan } from '../../lib/library'
 import type { Item } from '../../lib/types'
 import { useLibrary } from '../../hooks/useLibrary'
 import { ScreenHelp } from '../../components/ScreenHelp'
 import { PrintDialog } from '../print/PrintDialog'
+import { AboutSection } from './About'
+import { ExportTextDialog, PasteImportDialog } from './BackupTextDialogs'
+import { readEnv } from '../../lib/environment'
+import { isSample } from '../../lib/sampleData'
 import { TidyDialog } from './TidyDialog'
 import { useAutoBackup } from '../../hooks/useAutoBackup'
 import { ageLabel } from '../../lib/backup'
@@ -24,12 +28,15 @@ interface Preview {
 }
 
 export function SettingsView() {
-  const { items, settings, updateSettings, updateMany, exportFile, planImport, applyImport, clearAll } = useLibrary()
+  const { items, settings, updateSettings, updateMany, removeMany, exportFile, planImport, applyImport, clearAll } = useLibrary()
   const [preview, setPreview] = useState<Preview | null>(null)
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [tidyOpen, setTidyOpen] = useState(false)
   const [printOpen, setPrintOpen] = useState(false)
+  const [copyOpen, setCopyOpen] = useState(false)
+  const [pasteOpen, setPasteOpen] = useState(false)
+  const crossOrigin = useMemo(() => readEnv().crossOrigin, [])
   const fileInput = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<EnrichProgress | null>(null)
   const [coverReport, setCoverReport] = useState<{ text: string; unmatched: string[]; ok: boolean } | null>(null)
@@ -52,16 +59,15 @@ export function SettingsView() {
     setCoverReport({ text, unmatched: out.unmatched, ok: !out.failed })
   }
 
-  const onFile = async (file: File | undefined) => {
-    if (!file) return
+  // Turns the text of a backup or CSV into a preview. Shared by file choosing and pasting.
+  const showPreview = (text: string, name: string) => {
     setMessage(null)
     setPreview(null)
     try {
-      const text = await file.text()
       let incoming: Item[]
       let dropped = 0
       let ignoredHeaders: string[] = []
-      if (/\.csv$/i.test(file.name) || !/^\s*[[{]/.test(text)) {
+      if (/\.csv$/i.test(name) || !/^\s*[[{]/.test(text)) {
         const parsed = csvToItems(text)
         if ('error' in parsed) return setMessage({ text: parsed.error, ok: false })
         ;({ items: incoming, dropped, ignoredHeaders } = parsed)
@@ -70,9 +76,18 @@ export function SettingsView() {
         if (!check.ok) return setMessage({ text: check.error, ok: false })
         ;({ items: incoming, dropped } = check)
       }
-      setPreview({ fileName: file.name, incoming, plan: planImport(incoming), dropped, ignoredHeaders })
+      setPreview({ fileName: name, incoming, plan: planImport(incoming), dropped, ignoredHeaders })
     } catch {
-      setMessage({ text: 'That file could not be read. Is it a Stacks Video backup or a CSV?', ok: false })
+      setMessage({ text: 'That could not be read. Is it a Stacks Video backup or a CSV?', ok: false })
+    }
+  }
+
+  const onFile = async (file: File | undefined) => {
+    if (!file) return
+    try {
+      showPreview(await file.text(), file.name)
+    } catch {
+      setMessage({ text: 'That file could not be read.', ok: false })
     } finally {
       if (fileInput.current) fileInput.current.value = ''
     }
@@ -114,6 +129,11 @@ export function SettingsView() {
           <button className={btnSecondary} onClick={() => setPrintOpen(true)} disabled={!items.length}>
             <Printer size={16} /> Print or save a list (PDF)
           </button>
+          {crossOrigin && (
+            <button className={btnSecondary} onClick={() => setCopyOpen(true)} disabled={!items.length} title="For pages where the browser blocks file downloads">
+              <ClipboardPaste size={16} /> Copy backup as text…
+            </button>
+          )}
         </div>
       </Section>
 
@@ -126,6 +146,11 @@ export function SettingsView() {
           <label htmlFor="import-file" className={`${btnSecondary} cursor-pointer`}>
             <FileUp size={16} /> Choose a file…
           </label>
+          {crossOrigin && (
+            <button className={`${btnSecondary} ml-2`} onClick={() => setPasteOpen(true)}>
+              <ClipboardPaste size={16} /> Paste backup text…
+            </button>
+          )}
         </div>
         {preview && (
           <div className="grid gap-2 rounded-xl border border-accent/40 bg-accent/5 p-3 text-sm">
@@ -238,6 +263,14 @@ export function SettingsView() {
           <button className={btnSecondary} onClick={() => setTidyOpen(true)}>
             Tidy up genres, locations, series and tags
           </button>
+          {items.some(isSample) && (
+            <button
+              className={`${btnSecondary} ml-2`}
+              onClick={() => removeMany(new Set(items.filter(isSample).map((i) => i.id)))}
+            >
+              Remove the sample items ({items.filter(isSample).length})
+            </button>
+          )}
         </div>
         <Field label="Remind me about lent items after (days)" hint="0 turns reminders off. A banner appears when something has been out this long.">
           <input
@@ -279,7 +312,10 @@ export function SettingsView() {
           </div>
         )}
       </Section>
+      <AboutSection />
       <TidyDialog open={tidyOpen} onClose={() => setTidyOpen(false)} />
+      <ExportTextDialog open={copyOpen} onClose={() => setCopyOpen(false)} getText={() => JSON.stringify(buildExport(items), null, 2)} onCopied={() => updateSettings({ lastBackupAt: new Date().toISOString() })} />
+      <PasteImportDialog open={pasteOpen} onClose={() => setPasteOpen(false)} onText={(t) => showPreview(t, 'pasted text')} />
       <PrintDialog open={printOpen} onClose={() => setPrintOpen(false)} />
     </div>
   )
@@ -302,7 +338,9 @@ function FolderBackupCard() {
   if (auto.status === 'unsupported') {
     return (
       <p className="rounded-lg border border-line bg-bg p-3 text-sm text-mute">
-        Automatic folder backup needs Chrome, Edge or another Chromium browser. In this browser, use the export buttons below.
+        {readEnv().crossOrigin
+          ? 'Automatic folder backup is not available while Stacks Video runs inside another website, because the browser blocks folder access there. Use the export buttons below.'
+          : 'Automatic folder backup needs Chrome, Edge or another Chromium browser. In this browser, use the export buttons below.'}
       </p>
     )
   }

@@ -89,6 +89,7 @@ export const SCREEN_HELP: Record<HelpId, ScreenHelp> = {
       'Everything is stored only in this browser. Nothing is uploaded, so export a backup regularly.',
       'Made a mistake? Press Rewind (undo) at the top, or Ctrl+Z / Cmd+Z when you are not typing. It steps back through your last 30 changes, including deletes, bulk edits, imports, tidy-ups and even deleting the whole collection. Undo is forgotten when you close or reload the page, so it is not a substitute for a backup.',
       'Automatic backup to a folder (Chrome or Edge) saves a copy a few seconds after every change. Pick a folder inside OneDrive, Dropbox or iCloud and your collection survives losing this computer. After restarting the browser you may need to press Reconnect once.',
+      'About (at the bottom) has the privacy statement, credits and licenses. If Stacks Video is running inside another website such as itch.io, folder backup is unavailable and a Copy backup as text button appears for when downloads are blocked.',
       'Print or save a list (PDF) makes a paper list for insurance or selling; see its own help inside.',
       'Export backup (JSON) saves everything and is what you want for restoring or moving to another device. Export spreadsheet (CSV) is for editing in Excel or Sheets.',
       'Import shows a preview first. It adds new items and fills blanks, and never deletes or overwrites what you already have, so importing the same file twice is safe.',
@@ -112,7 +113,7 @@ export const SCREEN_HELP: Record<HelpId, ScreenHelp> = {
 }
 
 export const GETTING_STARTED: string[] = [
-  'Press Add and search for something you own, or choose Enter by hand.',
+  'Press Add and search for something you own, or choose Enter by hand. Just looking around? On an empty shelf, press Try a sample collection to fill it with made-up titles; you can remove them again in Settings.',
   'Say where it lives, for example "Main binder" and "Page 12 · C" (the Binder tab turns those into a page-by-page view). Stacks Video remembers your last location while you add several in a row.',
   'Already have a list? Go to Settings and Import a CSV or a Stacks Video backup.',
   'For movie and TV search, paste a free TMDB token in Settings. Then use Find cover art to fill in posters for what you have already added.',
