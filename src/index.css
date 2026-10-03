@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #151311;
+  --color-surface: #201d1a;
+  --color-raised: #2a2622;
+  --color-line: #3d3731;
+  --color-ink: #f5eddf;
+  --color-mute: #aaa092;
+  --color-accent: #ff6350;
+  --color-accent-ink: #1a0a07;
+  --color-good: #86d49a;
+  --color-bad: #ff9b9b;
+  /* The yellow rental sticker: format badges and little labels. */
+  --color-sticker: #ffc928;
+  --color-sticker-ink: #1d1a16;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  /* Chunky storefront lettering, used for the wordmark and big verdicts only. */
+  --font-sign: "Bungee", "Barlow Condensed", ui-sans-serif, sans-serif;
+}
+
+/* Light theme: same tokens, new values. Chosen in Settings (or follows the device); src/lib/theme.ts
+   sets data-theme on <html>, and theme.test.ts checks the contrast of every pair below. */
+:root[data-theme="light"] {
+  --color-bg: #f6efe0;
+  --color-surface: #fffaf0;
+  --color-raised: #ece3d0;
+  --color-line: #d4c7ad;
+  --color-ink: #1d1a16;
+  --color-mute: #5f5649;
+  --color-accent: #b3261e;
+  --color-accent-ink: #ffffff;
+  --color-good: #1f6b3a;
+  --color-bad: #a61b1b;
+  /* A deeper marigold: pale yellow vanishes against cream. */
+  --color-sticker: #f2a900;
+  color-scheme: light;
+}
+
+/* Use as light:… for things that need a different value on the light theme. */
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-bg);
+  }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button {
+    cursor: pointer;
+    text-align: center;
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  input, select, textarea {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.65rem;
+    font: inherit;
+    font-size: 0.9rem;
+    width: 100%;
+    min-width: 0;
+  }
+  input[type="checkbox"] {
+    width: auto;
+    accent-color: var(--color-accent);
+  }
+  select option {
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+  dialog {
+    color: var(--color-ink);
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.65);
+  }
+}
+
+/* The printable list is rendered once more outside the app; on paper only that copy shows. */
+.print-sheet {
+  display: none;
+}
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  html, body {
+    background: #fff !important;
+  }
+  #root, dialog {
+    display: none !important;
+  }
+  .print-sheet {
+    display: block;
+  }
+  .print-sheet .sheet {
+    padding: 0;
+  }
+  .print-sheet thead {
+    display: table-header-group;
+  }
+  .print-sheet tr, .print-sheet h2 {
+    break-inside: avoid;
+  }
+  .print-sheet h2 {
+    break-after: avoid;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in {
+    animation: fade-in 0.15s ease-out;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+}
