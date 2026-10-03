@@ -9,3 +9,4 @@ npm-debug.log*
 Thumbs.db
 migration/*.json
 migration/*.csv
+release/

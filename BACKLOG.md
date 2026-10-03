@@ -22,6 +22,16 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done. Keep this file current: m
 - [x] **13. Light theme.** *(done 2026-10-03: Settings → Appearance; follows the device by default; contrast of both palettes is checked by a test)*
 - [x] **14. Undo** after delete, bulk edit and import. *(done 2026-10-03: every change is undoable, last 30, in memory only; header button, toast and Ctrl+Z)*
 
+## For the itch.io release
+- [x] **16. itch.io package and page.** *(done 2026-10-03: pack script with checks, embedded-mode handling, sample collection, About/credits/TMDB notice, PRIVACY.md, third-party notices, cover and screenshots, docs/ITCH.md)*
+- [ ] **17. Pre-publish checks only a person can do:** trademark/domain check for "Stacks Video", choose a code license, run the real-page checklist in docs/ITCH.md.
+- [ ] **18. Barcode scanning on iPhone, Safari and Firefox.** They have no built-in `BarcodeDetector`, so the Scan button is hidden there. A small WASM scanner loaded only when Scan is tapped would fix it. *Most valuable remaining feature for the in-shop use case.*
+- [x] **19. Desktop app (Electron).** *(done 2026-10-03: ported from HorrorHub; Windows installer built and the packaged app passes the 21-check audit. macOS and Linux installers are built by the GitHub workflow and are NOT yet verified. Unsigned, so first run needs the right-click → Open route; the unsigned macOS arm64 case is the main unknown)*
+- [ ] **19b. Code signing** for Windows (SmartScreen) and macOS (Gatekeeper, notarization), and automatic updates.
+- [ ] **20. Test against the live services and real devices:** TMDB, RAWG, UPCitemdb, the camera, the real folder picker and printer, iPhone Safari.
+- [ ] **21. Importers for other apps** (Letterboxd, Delicious Library, CLZ, Goodreads) beyond the generic CSV mapping.
+- [ ] **22. Accessibility audit** (dialog focus, screen-reader announcements, tap targets).
+
 ## Bigger decision
 - [ ] **15. Sync between devices.** Needs accounts and a backend (Supabase fits), which cuts against local-first. Only if sharing one collection across phone and computer is really wanted. Cheaper alternative: folder backup (1) plus import.
 

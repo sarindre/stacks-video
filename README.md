@@ -76,6 +76,24 @@ That writes `migration/blockbuster-collection.json` (git-ignored, since it is a 
 
 What the converter does: binder page and slot become *location* "Main binder" and *position* "Page 12 · C"; Prime titles become *Digital* items at "Prime Video"; `SF` becomes a "Special features disc" edition; `BR`/`DVD` suffixes set the format; abbreviations (`HP:`, `LoR:`, `PotC:`) are spelled out; the old franchise "genres" are split into a real genre plus a series.
 
+## Desktop app (Windows, macOS, Linux)
+
+The same app in its own window, for people who would rather not use a browser. It works offline and keeps your data on your computer, and unlike the browser version inside itch.io's player it can use the **automatic backup folder** and plain file downloads. It's built with Electron: `electron/` is a small shell around the built web app, served from its own `app://stacksvideo/` address, with links opened in your normal browser and nothing else allowed to load. The only permissions it grants are copy-to-clipboard, choosing a backup folder, and the **camera** (for barcode scanning; never the microphone).
+
+- **Get it:** installers for each system are attached to a [GitHub Release](https://github.com/sarindre/Blockbuster-App/releases) when a version tag (such as `v0.1.0`) is pushed, built by `.github/workflows/desktop.yml`. They can also be pushed to itch.io (see [docs/ITCH.md](docs/ITCH.md)).
+- **Unsigned for now,** so your system will warn on first run. Windows: "More info", then "Run anyway". macOS: right-click the app, choose Open, then confirm (or System Settings → Privacy & Security → "Open Anyway"). Linux: `chmod +x StacksVideo-*.AppImage`, then run it.
+- **Its data is separate** from the browser versions (each keeps its own collection). Move between them with Export and Import.
+- **No automatic updates.** Download a newer installer to update; your data stays.
+- **Run it from source:** `npm run desktop`. **Build an installer for your system:** `npm run desktop:dist` (installers appear in `release/`). If the project sits inside OneDrive, building can fail while OneDrive syncs the output; build elsewhere with `npm run desktop:dist -- -c.directories.output=C:/temp/sv-release`.
+- **Check it:** `npm run audit:desktop` launches the real desktop app and checks it from the outside (it loads, can't reach Node, can't be navigated away from the app, may use the camera but not the microphone or location, keeps your data across a restart, and can reach the lookup services). Add `-- --packed=<path to "Stacks Video.exe">` to check a built package.
+- **Gotcha:** if Electron starts as plain Node and no window appears, `ELECTRON_RUN_AS_NODE` is set in your environment (some editors set it). `npm run desktop` removes it for you.
+
+## Trying it and sharing it
+
+- **Try a sample collection:** on the empty shelf, one button fills it with made-up titles (silent-era classics and invented VHS-era ones) so every screen has something to show. Remove them again in Settings.
+- **itch.io:** the page can offer the desktop installers *and* an in-browser version. `npm run pack:itch` builds and checks the app and writes `release/stacks-video-html5-v<version>.zip` for itch.io's HTML5 player; `npm run store-assets` redraws the cover and screenshots in `docs/itch/`. See [docs/ITCH.md](docs/ITCH.md) for page settings, ready-to-paste copy, what behaves differently inside itch's player, and the pre-publish checklist.
+- **Privacy and licenses:** [PRIVACY.md](PRIVACY.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) (regenerate with `npm run licenses`). The app's Settings has an About section with credits and the TMDB notice.
+
 ## Scripts
 
 | Command | What it does |
@@ -85,6 +103,12 @@ What the converter does: binder page and slot become *location* "Main binder" an
 | `npm test` | Unit tests (Vitest) |
 | `npm run typecheck` | TypeScript only |
 | `npm run migrate:legacy` | Convert the old app's data (see above) |
+| `npm run desktop` | Build, then run the desktop app from source |
+| `npm run desktop:dist` | Build an installer for the system you are on (into `release/`) |
+| `npm run audit:desktop` | Launch the real desktop app and check it from the outside |
+| `npm run pack:itch` | Build, check, and zip for itch.io's HTML5 player |
+| `npm run store-assets` | Redraw the itch.io cover and screenshots from the sample collection (needs Chrome or Edge) |
+| `npm run licenses` | Rewrite `THIRD_PARTY_NOTICES.md` from the shipped dependencies |
 
 ## Deploying
 

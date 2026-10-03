@@ -26,6 +26,19 @@ React 19, TypeScript (strict, `noUncheckedIndexedAccess`), Vite 7, Tailwind CSS 
 - **Voice is light and never costs clarity.** Retro names are used for a few features: Rewind = undo, In stock? = "do I own this?", Coming soon = wishlist, Rented out / Overdue = lending. Anywhere the retro word could be unclear, the plain word sits beside it (tooltips, `aria-label`s such as "Rewind (undo)", and the help text, which stays plain and says both). Don't rename more features without the same care.
 - Internal storage keys keep the old `shelfkeeper.` prefix and the IndexedDB is still `shelfkeeper`, on purpose: renaming them would orphan saved collections. Don't "fix" them without a migration.
 
+## Distribution (itch.io)
+- The browser build must work from any sub-folder and when embedded in a page on another site: **no absolute paths** (`base` is `./`), nothing loaded from third parties at start-up (fonts are bundled). `npm run pack:itch` fails if either is violated.
+- Embedded frames differ: no folder picker, downloads may be blocked, camera needs permission. `lib/environment.ts` detects this; keep features degrading gracefully (see the table in `docs/ITCH.md`). A render must never have side effects (an earlier text-backup dialog froze the page by updating a setting while rendering).
+- The listing stays **free with no payment option** because of TMDB's terms (`docs/ITCH.md`). TMDB's logo and notice must be shown wherever its data is (`components/Attribution.tsx`, Settings → About).
+- `sampleData.ts` is the demo collection used by the "Try a sample collection" button and by the store screenshots. Its ids start with `sample-`.
+
+## Desktop app (Electron)
+- `electron/main.cjs` (the window), `preload.cjs` (tells the page it's the desktop app) and `policy.cjs` (which addresses load, which links open externally, which permissions are granted; tested in `src/desktop/policy.test.ts`). The web app is the single source of truth: desktop only changes behaviour through `src/lib/desktop.ts` (`isDesktopApp()`), e.g. no service worker. Don't add Node access to the page. Electron and electron-builder are devDependencies only.
+- Permissions are an allow-list: clipboard write, notifications, file system (backup folder) and the **camera only** (never the microphone). Keep it that way; change `policy.cjs` and its tests together.
+- The app is served from `app://stacksvideo/`, so its stored data is separate from the browser versions. Storage keys keep the old `shelfkeeper.` prefix there too.
+- Check changes with `npm run audit:desktop` (add `-- --packed=<exe>` for a built package). Building installers inside OneDrive can fail (file locks): build to a folder outside it. If Electron starts as plain Node, `ELECTRON_RUN_AS_NODE` is set (`npm run desktop` strips it).
+- `.github/workflows/desktop.yml` builds Windows, macOS and Linux installers plus the itch.io zip on a version tag, and pushes to itch.io once `BUTLER_API_KEY` and `ITCH_TARGET` are set.
+
 ## Conventions
 - **Every change to the library goes through `commit()` in `useLibrary.tsx`** so it lands on the undo stack (`lib/history.ts`). Don't call `setItems` directly elsewhere. Pass a human label for bulk operations (`updateMany(patches, label)`, `addMany(items, label)`); big changes show the Undo toast.
 - **Theming:** colours are tokens in `src/index.css` (`@theme` is dark; `:root[data-theme="light"]` overrides it). Use the tokens (`bg-surface`, `text-mute`, `text-accent`…), never fixed colours, except for the printable sheet which is always black on white. Use the `light:` variant for one-off differences. `theme.test.ts` parses the stylesheet and fails if any text/background pair drops below WCAG AA, so adjust values there if you retune the palette. `index.html` has a tiny inline script that sets the theme before first paint; keep it in step with `lib/theme.ts`.
