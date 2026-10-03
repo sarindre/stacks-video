@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Movie Vault</title>
+
+<meta name="theme-color" content="#003087">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bb-yellow: #FFD700;
+    --bb-blue: #003087;
+    --bb-dark: #0a0a0a;
+    --bb-border: #1e1e1e;
+    --bb-text: #e8e8e8;
+    --bb-muted: #777;
+    --prime-blue: #00A8E1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bb-dark); color: var(--bb-text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+  .header { background: var(--bb-blue); border-bottom: 6px solid var(--bb-yellow); position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; gap: 16px; flex-wrap: wrap; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 44px; height: 44px; background: var(--bb-yellow); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--bb-blue); flex-shrink: 0; }
+  .logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--bb-yellow); letter-spacing: 2px; line-height: 1; }
+  .logo-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; color: rgba(255,215,0,0.65); letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; }
+  .header-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--bb-yellow); line-height: 1; }
+  .stat-num.prime-color { color: var(--prime-blue); }
+  .stat-label { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; color: rgba(255,255,255,0.55); letter-spacing: 2px; text-transform: uppercase; }
+
+  .controls { background: #001f5a; padding: 8px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 300px; }
+  .search-wrap svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; stroke: var(--bb-muted); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .search-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,215,0,0.25); border-radius: 3px; color: white; font-family: 'Barlow', sans-serif; font-size: 13px; padding: 6px 10px 6px 30px; outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: var(--bb-yellow); }
+  .search-input::placeholder { color: var(--bb-muted); }
+  .filter-group { display: flex; gap: 5px; flex-wrap: wrap; }
+  .filter-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(255,215,0,0.25); background: transparent; color: rgba(255,215,0,0.65); padding: 4px 10px; border-radius: 3px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .filter-btn:hover, .filter-btn.active { background: var(--bb-yellow); color: var(--bb-blue); border-color: var(--bb-yellow); }
+  .filter-btn.prime-btn { border-color: rgba(0,168,225,0.4); color: rgba(0,168,225,0.8); }
+  .filter-btn.prime-btn:hover, .filter-btn.prime-btn.active { background: var(--prime-blue); color: #000; border-color: var(--prime-blue); }
+  .source-toggle { display: flex; gap: 5px; }
+
+  .ticker { background: var(--bb-yellow); color: var(--bb-blue); font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 2px; padding: 3px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-inner { display: inline-block; animation: ticker 90s linear infinite; }
+  @keyframes ticker { 0%{transform:translateX(100vw)} 100%{transform:translateX(-100%)} }
+
+  .main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+  .genre-section { margin-bottom: 32px; }
+  .genre-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; border-bottom: 2px solid var(--bb-yellow); padding-bottom: 7px; }
+  .genre-tag { background: var(--bb-yellow); color: var(--bb-blue); font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; padding: 2px 16px 2px 12px; clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%); }
+  .genre-count { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; color: var(--bb-muted); letter-spacing: 1px; }
+
+  .dvd-table { width: 100%; border-collapse: collapse; }
+  .dvd-table thead tr { background: #0d1b3e; border-bottom: 1px solid var(--bb-yellow); }
+  .dvd-table th { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--bb-yellow); padding: 7px 12px; text-align: left; }
+  .dvd-table th.center { text-align: center; }
+  .dvd-table tbody tr { border-bottom: 1px solid var(--bb-border); transition: background 0.1s; }
+  .dvd-table tbody tr:hover { background: rgba(255,215,0,0.04); }
+  .dvd-table tbody tr.prime-row:hover { background: rgba(0,168,225,0.06); }
+  .dvd-table td { padding: 8px 12px; font-size: 13px; vertical-align: middle; }
+
+  .title-cell { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; color: var(--bb-text); }
+  .series-pill { display: inline-block; background: #1a1a00; border: 1px solid rgba(255,215,0,0.2); color: rgba(255,215,0,0.6); font-family: 'Barlow Condensed', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 1px 6px; border-radius: 10px; margin-left: 6px; vertical-align: middle; white-space: nowrap; text-transform: uppercase; }
+
+  .source-badge { display: inline-flex; align-items: center; font-family: 'Barlow Condensed', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 1px 6px; border-radius: 2px; text-transform: uppercase; white-space: nowrap; }
+  .badge-dvd { background: #1a1500; border: 1px solid rgba(255,215,0,0.3); color: var(--bb-yellow); }
+  .badge-prime { background: #001a2e; border: 1px solid rgba(0,168,225,0.4); color: var(--prime-blue); }
+
+  .location-cell { text-align: center; }
+  .page-num { background: var(--bb-blue); color: var(--bb-yellow); padding: 2px 7px; border-radius: 2px; font-size: 11px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
+  .insert-num { background: #0d2b0d; color: #55cc55; border: 1px solid #2a5a2a; padding: 2px 7px; border-radius: 2px; font-size: 11px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
+  .prime-location { color: var(--prime-blue); font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1px; }
+
+  .status-stack { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  .status-btn {
+    border:1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.7);
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .status-btn.active.favorite { background: rgba(255,215,0,0.18); color: var(--bb-yellow); border-color: rgba(255,215,0,0.42); }
+  .status-btn.active.watched { background: rgba(80,200,120,0.15); color: #9ee29e; border-color: rgba(80,200,120,0.35); }
+  .status-btn.active.want { background: rgba(0,168,225,0.15); color: var(--prime-blue); border-color: rgba(0,168,225,0.35); }
+
+  .no-results { text-align: center; padding: 60px 20px; color: var(--bb-muted); font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; display: none; }
+  .footer { background: var(--bb-blue); border-top: 4px solid var(--bb-yellow); padding: 14px 24px; text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 3px; color: rgba(255,215,0,0.55); margin-top: 40px; }
+
+  @media (max-width: 768px) {
+    .header-top { padding: 12px 14px; align-items:flex-start; }
+    .logo-text { font-size: 24px; }
+    .controls { padding: 10px 14px; }
+    .main { padding: 14px; }
+    .header-stats { width:100%; justify-content:space-between; gap: 10px; }
+    .stat { min-width: 64px; }
+    .search-wrap { min-width: 100%; max-width: none; }
+    .source-toggle, .filter-group { width: 100%; overflow-x: auto; padding-bottom: 2px; }
+    .filter-group { flex-wrap: nowrap; }
+    .filter-btn { font-size: 12px; padding: 7px 10px; }
+    .genre-header { align-items:flex-start; flex-direction: column; gap: 6px; }
+    .dvd-table, .dvd-table thead, .dvd-table tbody, .dvd-table tr, .dvd-table td { display:block; width:100%; }
+    .dvd-table thead { display:none; }
+    .dvd-table tbody tr { margin: 0 0 10px 0; border: 1px solid var(--bb-border); border-radius: 8px; padding: 10px 12px; background: rgba(255,255,255,0.02); }
+    .dvd-table td { border: none; padding: 4px 0; }
+    .location-cell { text-align:left; }
+    .title-cell { font-size: 16px; }
+    .footer { padding: 14px; font-size: 11px; letter-spacing: 2px; }
+  }
+
+
+  .manager-panel { background: #0d1b3e; border: 1px solid rgba(255,215,0,0.18); border-radius: 10px; padding: 14px; margin-bottom: 20px; }
+
+  .manager-launch { background: #0d1b3e; border: 1px solid rgba(255,215,0,0.18); border-radius: 10px; padding: 14px; margin-bottom: 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .manager-launch-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; color: var(--bb-yellow); }
+  .manager-launch-sub { color: rgba(255,255,255,0.72); font-size: 13px; }
+  .manager-launch-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight:700; letter-spacing:1px; text-transform: uppercase; border-radius:6px; padding: 10px 14px; cursor:pointer; border:1px solid rgba(255,215,0,0.35); background: var(--bb-yellow); color: var(--bb-blue); text-decoration:none; }
+  .library-page .manager-panel, .library-page #manual-movie-section { display:none; }
+
+  .manager-top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 10px; }
+  .manager-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; color: var(--bb-yellow); }
+  .manager-sub { color: rgba(255,255,255,0.7); font-size: 13px; }
+  .manager-toggle { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(255,215,0,0.35); background: var(--bb-yellow); color: var(--bb-blue); padding: 8px 14px; border-radius: 6px; cursor: pointer; }
+  .manager-body.hidden { display:none; }
+  .manager-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .manager-field label { display:block; margin-bottom:4px; color: rgba(255,255,255,0.75); font-size: 12px; }
+  .manager-field input, .manager-field select { width:100%; background: rgba(0,0,0,0.35); border:1px solid rgba(255,215,0,0.22); border-radius: 6px; color: white; font-family:'Barlow', sans-serif; font-size: 14px; padding: 9px 10px; }
+  .manager-field input:focus, .manager-field select:focus { outline:none; border-color: var(--bb-yellow); }
+  .manager-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
+  .manager-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight:700; letter-spacing:1px; text-transform: uppercase; border-radius:6px; padding: 9px 14px; cursor:pointer; border:1px solid rgba(255,215,0,0.35); }
+  .manager-btn.primary { background: var(--bb-yellow); color: var(--bb-blue); }
+  .manager-btn.secondary { background: transparent; color: rgba(255,215,0,0.82); }
+  .manager-status { margin-top: 10px; min-height: 18px; font-size: 13px; color: #9ee29e; }
+  .manual-section { margin-bottom: 28px; }
+  .manual-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 10px; }
+  .manual-title { font-family:'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; color: var(--bb-yellow); }
+  .manual-list { display:grid; gap:8px; }
+  .manual-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid rgba(255,215,0,0.14); border-radius:8px; background: rgba(255,255,255,0.02); }
+  .manual-item-main { display:flex; flex-direction:column; gap:4px; }
+  .manual-item-title { font-family:'Barlow Condensed', sans-serif; font-size:18px; font-weight:600; }
+  .manual-item-meta { font-size:12px; color: rgba(255,255,255,0.65); }
+  .delete-btn { border:1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.04); color: white; border-radius:6px; padding:7px 10px; cursor:pointer; font-size:12px; }
+  .empty-note { color: rgba(255,255,255,0.55); font-size: 13px; }
+
+</style>
+</head>
+<body class="library-page">
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">BB</div>
+      <div>
+        <div class="logo-text">Family Movie Vault</div>
+        <div class="logo-sub">Family Movie App — DVD + Prime Video</div>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat"><div class="stat-num" id="total-count">—</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-num" id="dvd-count">—</div><div class="stat-label">DVDs</div></div>
+      <div class="stat"><div class="stat-num prime-color" id="prime-count">—</div><div class="stat-label">Prime</div></div>
+      <div class="stat"><div class="stat-num" id="genre-count">—</div><div class="stat-label">Genres</div></div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" type="text" id="search" placeholder="Search titles or series...">
+    </div>
+    <div class="source-toggle">
+      <button class="filter-btn active" data-source="all">All Sources</button>
+      <button class="filter-btn" data-source="dvd">📀 DVD Only</button>
+      <button class="filter-btn prime-btn" data-source="prime">▶ Prime Only</button>
+    </div>
+    <div class="filter-group" id="genre-filters">
+      <button class="filter-btn active" data-genre="all">All Genres</button>
+    </div>
+  </div>
+  <div class="ticker"><span class="ticker-inner" id="ticker-text">Loading...</span></div>
+</div>
+
+
+<div class="main" id="main-content-wrap">
+  <div class="manager-launch">
+    <div>
+      <div class="manager-launch-title">Manage Cloud Movies</div>
+      <div class="manager-launch-sub">Open a dedicated page to add, export, and remove movies from your shared family library.</div>
+    </div>
+    <a class="manager-launch-btn" href="./manage.html">Open Cloud Manager</a>
+  </div>
+  <div class="manager-panel">
+    <div class="manager-top">
+      <div>
+        <div class="manager-title">Manual Add</div>
+        <div class="manager-sub">Add new movies right from your phone or browser. Entries save to your shared family cloud.</div>
+      </div>
+      <button class="manager-toggle" id="toggle-manager">Add / Manage Movies</button>
+    </div>
+    <div class="manager-body hidden" id="manager-body">
+      <form id="add-movie-form">
+        <div class="manager-grid">
+          <div class="manager-field" style="grid-column: span 2; min-width: 0;">
+            <label for="movie-title">Title</label>
+            <input id="movie-title" name="title" type="text" required placeholder="Movie title">
+          </div>
+          <div class="manager-field">
+            <label for="movie-source">Source</label>
+            <select id="movie-source" name="source">
+              <option value="dvd">DVD</option>
+              <option value="prime">Prime</option>
+            </select>
+          </div>
+          <div class="manager-field">
+            <label for="movie-genre">Genre</label>
+            <select id="movie-genre" name="genre"></select>
+          </div>
+          <div class="manager-field">
+            <label for="movie-page">Page</label>
+            <input id="movie-page" name="page" type="number" min="1" step="1" placeholder="Binder page">
+          </div>
+          <div class="manager-field">
+            <label for="movie-slot">Slot</label>
+            <input id="movie-slot" name="slot" type="text" maxlength="6" placeholder="A, B, C...">
+          </div>
+        </div>
+        <div class="manager-actions">
+          <button class="manager-btn primary" type="submit">Save Movie</button>
+          <button class="manager-btn secondary" type="button" id="export-movies">Export My Added Movies</button>
+        </div>
+        <div class="manager-status" id="manager-status"></div>
+      </form>
+    </div>
+  </div>
+  <div id="manual-movie-section"></div>
+  <div class="main" id="main-content"></div>
+</div>
+<div class="no-results" id="no-results">NO TITLES FOUND</div>
+
+<div class="footer">★ &nbsp; YOUR PERSONAL BLOCKBUSTER &nbsp; ★ &nbsp; DVD BINDER + PRIME VIDEO LIBRARY &nbsp; ★</div>
+
+<script>
+// Series definitions: each entry maps a title key → { series, num }
+// num can be a number or string like "1A", "PT1" etc.
+const SERIES = {
+  // Twilight
+  "Twilight":                          {series:"Twilight", num:1},
+  "Twilight (Prime)":                  {series:"Twilight", num:1},
+  "New Moon":                          {series:"Twilight", num:2},
+  "New Moon (Prime)":                  {series:"Twilight", num:2},
+  "Eclipse":                           {series:"Twilight", num:3},
+  "Eclipse (Prime)":                   {series:"Twilight", num:3},
+  "Breaking Dawn Part 1":              {series:"Twilight", num:"4A"},
+  "Breaking Dawn Part 1 (Prime)":      {series:"Twilight", num:"4A"},
+  "Breaking Dawn Part 2":              {series:"Twilight", num:"4B"},
+
+  // Scream
+  "Scream (1996)":                     {series:"Scream", num:1},
+  "Scream (Prime)":                    {series:"Scream", num:1},
+  "Scream 2":                          {series:"Scream", num:2},
+  "Scream 4":                          {series:"Scream", num:4},
+  "Scream 7":                          {series:"Scream", num:7},
+
+  // Resident Evil
+  "Resident Evil":                     {series:"Resident Evil", num:1},
+  "Resident Evil (Prime)":             {series:"Resident Evil", num:1},
+  "Resident Evil: Apocalypse":         {series:"Resident Evil", num:2},
+  "RE: Apocalypse SF":                 {series:"Resident Evil", num:2},
+  "Resident Evil: Extinction":         {series:"Resident Evil", num:3},
+  "Resident Evil: Afterlife":          {series:"Resident Evil", num:4},
+  "Resident Evil: Degeneration":       {series:"Resident Evil", num:"3.5"},
+  "Resident Evil: The Final Chapter":  {series:"Resident Evil", num:6},
+
+  // Alien franchise
+  "Alien":                             {series:"Alien", num:1},
+  "Alien (Prime)":                     {series:"Alien", num:1},
+  "Aliens":                            {series:"Alien", num:2},
+  "Aliens Special Edition":            {series:"Alien", num:2},
+  "Aliens (Special Edition)":          {series:"Alien", num:2},
+  "Alien 3":                           {series:"Alien", num:3},
+  "Alien 3 (Prime)":                   {series:"Alien", num:3},
+  "Alien Resurrection":                {series:"Alien", num:4},
+  "Alien Resurrection SF":             {series:"Alien", num:4},
+  "Alien Resurrection (Prime)":        {series:"Alien", num:4},
+  "Alien: Covenant":                   {series:"Alien", num:6},
+  "Alien: Romulus":                    {series:"Alien", num:7},
+  "AvP":                               {series:"Alien vs. Predator", num:1},
+  "Alien vs. Predator (Prime)":        {series:"Alien vs. Predator", num:1},
+  "AvP: Requiem":                      {series:"Alien vs. Predator", num:2},
+
+  // Harry Potter
+  "HP: The Sorcerer's Stone":          {series:"Harry Potter", num:1},
+  "HP: The Sorcerer's Stone SF":       {series:"Harry Potter", num:1},
+  "HP: Chamber of Secrets":            {series:"Harry Potter", num:2},
+  "HP: Chamber of Secrets SF":         {series:"Harry Potter", num:2},
+  "HP: Prisoner of Azkaban":           {series:"Harry Potter", num:3},
+  "HP: Prisoner of Azkaban SF":        {series:"Harry Potter", num:3},
+  "HP: Goblet of Fire":                {series:"Harry Potter", num:4},
+  "HP: Order of the Phoenix":          {series:"Harry Potter", num:5},
+  "HP: Order of the Phoenix SF":       {series:"Harry Potter", num:5},
+  "HP: Half-Blood Prince":             {series:"Harry Potter", num:6},
+  "HP: Half-Blood Prince SF":          {series:"Harry Potter", num:6},
+  "HP: Deathly Hallows Pt 1 BR":       {series:"Harry Potter", num:"7A"},
+  "HP: Deathly Hallows Pt 1 DVD":      {series:"Harry Potter", num:"7A"},
+  "HP: Deathly Hallows Pt 2":          {series:"Harry Potter", num:"7B"},
+  "HP: Deathly Hallows Pt 2 SF":       {series:"Harry Potter", num:"7B"},
+  "Fantastic Beasts and Where to Find Them": {series:"Fantastic Beasts", num:1},
+  "Fantastic Beasts: Crimes of Grindelwald": {series:"Fantastic Beasts", num:2},
+
+  // Lord of the Rings / Hobbit
+  "LoR: Fellowship of the Ring":       {series:"Lord of the Rings", num:1},
+  "LoR: Fellowship of the Ring SF":    {series:"Lord of the Rings", num:1},
+  "LoR: The Two Towers":               {series:"Lord of the Rings", num:2},
+  "LoR: The Two Towers SF":            {series:"Lord of the Rings", num:2},
+  "LoR: Return of the King":           {series:"Lord of the Rings", num:3},
+  "LoR: Return of the King SF":        {series:"Lord of the Rings", num:3},
+  "The Hobbit DVD":                    {series:"The Hobbit", num:1},
+  "The Hobbit SF":                     {series:"The Hobbit", num:1},
+  "The Hobbit BR":                     {series:"The Hobbit", num:1},
+  "The Hobbit":                        {series:"The Hobbit", num:1},
+
+  // Star Wars
+  "Star Wars: The Force Awakens":      {series:"Star Wars", num:7},
+  "Star Wars: The Force Awakens (Prime)":{series:"Star Wars", num:7},
+  "Rogue One: A Star Wars Story":      {series:"Star Wars", num:"3.5"},
+
+  // Pirates of the Caribbean
+  "PotC: Curse of the Black Pearl":    {series:"Pirates of the Caribbean", num:1},
+  "PotC: Curse of the Black Pearl SF": {series:"Pirates of the Caribbean", num:1},
+  "PotC: Dead Man's Chest":            {series:"Pirates of the Caribbean", num:2},
+  "PotC: Dead Man's Chest SF":         {series:"Pirates of the Caribbean", num:2},
+  "PotC: At World's End":              {series:"Pirates of the Caribbean", num:3},
+  "Pirates of the Caribbean: Dead Men Tell No Tales": {series:"Pirates of the Caribbean", num:5},
+  "Pirates of the Caribbean: On Stranger Tides":      {series:"Pirates of the Caribbean", num:4},
+
+  // Marvel MCU
+  "Iron Man":                          {series:"MCU", num:1},
+  "The Incredible Hulk":               {series:"MCU", num:2},
+  "Iron Man 2":                        {series:"MCU", num:3},
+  "Iron Man 2 SF":                     {series:"MCU", num:3},
+  "Iron Man 2 DVD":                    {series:"MCU", num:3},
+  "Iron Man 2 (Prime)":                {series:"MCU", num:3},
+  "Thor":                              {series:"MCU", num:4},
+  "Captain America: The First Avenger":{series:"MCU", num:5},
+  "The Avengers":                      {series:"MCU", num:6},
+  "Avengers":                          {series:"MCU", num:6},
+  "Iron Man 3":                        {series:"MCU", num:7},
+  "Thor: The Dark World":              {series:"MCU", num:8},
+  "Thor: The Dark World (Prime)":      {series:"MCU", num:8},
+  "Captain America: The Winter Soldier":{series:"MCU", num:9},
+  "Guardians of the Galaxy":           {series:"MCU", num:10},
+  "Guardians of the Galaxy Vol. 2":    {series:"MCU", num:15},
+  "Avengers: Age of Ultron":           {series:"MCU", num:11},
+  "Ant-Man":                           {series:"MCU", num:12},
+  "Ant-Man (Prime)":                   {series:"MCU", num:12},
+  "Captain America: Civil War":        {series:"MCU", num:13},
+  "Doctor Strange":                    {series:"MCU", num:14},
+  "Spider-Man: Homecoming":            {series:"MCU", num:16},
+  "Thor: Ragnarok":                    {series:"MCU", num:17},
+  "Black Panther":                     {series:"MCU", num:18},
+  "Avengers: Infinity War":            {series:"MCU", num:19},
+  "Ant-Man and the Wasp":              {series:"MCU", num:20},
+  "Captain Marvel":                    {series:"MCU", num:21},
+  "Avengers: Endgame":                 {series:"MCU", num:22},
+  "Spider-Man: Far From Home":         {series:"MCU", num:23},
+  "Black Panther: Wakanda Forever":    {series:"MCU", num:30},
+  "Shazam!":                           {series:"DCU", num:1},
+  "Thunderbolts":                      {series:"MCU", num:36},
+
+  // Spider-Man (Sony)
+  "Spider-Man 3":                      {series:"Spider-Man (Raimi)", num:3},
+  "The Amazing Spider-Man BR":         {series:"Amazing Spider-Man", num:1},
+  "The Amazing Spider-Man SF":         {series:"Amazing Spider-Man", num:1},
+  "The Amazing Spider-Man DVD":        {series:"Amazing Spider-Man", num:1},
+  "Spider-Man: Into the Spider-Verse": {series:"Spider-Verse", num:1},
+  "Venom":                             {series:"Venom", num:1},
+
+  // X-Men
+  "X2":                                {series:"X-Men", num:2},
+  "X2 SF":                             {series:"X-Men", num:2},
+  "X3: The Last Stand":                {series:"X-Men", num:3},
+  "X-Men Origins: Wolverine":          {series:"X-Men", num:4},
+  "The Wolverine":                     {series:"X-Men", num:5},
+  "Logan":                             {series:"X-Men", num:10},
+  "Kick-Ass BR":                       {series:"Kick-Ass", num:1},
+  "Kick-Ass DVD":                      {series:"Kick-Ass", num:1},
+
+  // DC
+  "Batman Forever":                    {series:"Batman (Burton/Schumacher)", num:3},
+  "Batman v Superman: Dawn of Justice":{series:"DCEU", num:2},
+  "Justice League":                    {series:"DCEU", num:5},
+  "Wonder Woman":                      {series:"DCEU", num:3},
+  "The Dark Knight":                   {series:"Dark Knight Trilogy", num:2},
+  "The Dark Knight SF":                {series:"Dark Knight Trilogy", num:2},
+  "The Dark Knight Rises":             {series:"Dark Knight Trilogy", num:3},
+  "The Dark Knight Rises SF":          {series:"Dark Knight Trilogy", num:3},
+  "Constantine":                       {series:"Constantine", num:1},
+  "Deadpool":                          {series:"Deadpool", num:1},
+  "Deadpool 2":                        {series:"Deadpool", num:2},
+  "Once Upon a Deadpool":              {series:"Deadpool", num:"2 PG13"},
+
+  // Hunger Games
+  "Hunger Games":                      {series:"Hunger Games", num:1},
+  "Hunger Games SF":                   {series:"Hunger Games", num:1},
+  "The Hunger Games (Prime)":          {series:"Hunger Games", num:1},
+  "Hunger Games: Catching Fire":       {series:"Hunger Games", num:2},
+  "Hunger Games: Mockingjay Pt 1":     {series:"Hunger Games", num:"3A"},
+  "Hunger Games: Mockingjay Pt 2":     {series:"Hunger Games", num:"3B"},
+
+  // Star Trek
+  "Star Trek":                         {series:"Star Trek (Kelvin)", num:1},
+  "Star Trek SF":                      {series:"Star Trek (Kelvin)", num:1},
+  "Star Trek Into Darkness BR":        {series:"Star Trek (Kelvin)", num:2},
+  "Star Trek Into Darkness DVD":       {series:"Star Trek (Kelvin)", num:2},
+  "Star Trek Beyond":                  {series:"Star Trek (Kelvin)", num:3},
+
+  // Transformers
+  "Transformers":                      {series:"Transformers", num:1},
+  "Transformers: Revenge of the Fallen":{series:"Transformers", num:2},
+  "Transformers: RotF SF":             {series:"Transformers", num:2},
+  "Transformers: The Last Knight":     {series:"Transformers", num:5},
+  "Bumblebee":                         {series:"Transformers", num:6},
+
+  // Matrix
+  "Matrix Reloaded":                   {series:"The Matrix", num:2},
+  "Matrix Reloaded SF":                {series:"The Matrix", num:2},
+  "Matrix Revolutions":                {series:"The Matrix", num:3},
+  "Matrix Revolutions SF":             {series:"The Matrix", num:3},
+
+  // The Mummy
+  "The Mummy":                         {series:"The Mummy", num:1},
+  "The Mummy (1999)":                  {series:"The Mummy", num:1},
+  "The Mummy Returns":                 {series:"The Mummy", num:2},
+  "The Mummy: Tomb of the Dragon Emperor":{series:"The Mummy", num:3},
+
+  // Underworld
+  "Underworld":                        {series:"Underworld", num:1},
+  "Underworld SF":                     {series:"Underworld", num:1},
+  "Underworld: Awakening":             {series:"Underworld", num:4},
+
+  // Saw
+  "Saw":                               {series:"Saw", num:1},
+  "Saw IV":                            {series:"Saw", num:4},
+  "Saw V":                             {series:"Saw", num:5},
+  "Jigsaw":                            {series:"Saw", num:8},
+
+  // 28 Days Later
+  "28 Days Later":                     {series:"28 Days Later", num:1},
+  "28 Weeks Later":                    {series:"28 Days Later", num:2},
+  "28 Years Later":                    {series:"28 Days Later", num:3},
+
+  // Kill Bill
+  "Kill Bill Vol. 1":                  {series:"Kill Bill", num:1},
+  "Kill Bill Vol. 2":                  {series:"Kill Bill", num:2},
+
+  // Toy Story
+  "Toy Story":                         {series:"Toy Story", num:1},
+  "Toy Story 2":                       {series:"Toy Story", num:2},
+  "Toy Story 3":                       {series:"Toy Story", num:3},
+
+  // Jurassic Park/World
+  "Jurassic Park":                     {series:"Jurassic", num:1},
+  "Jurassic World":                    {series:"Jurassic", num:4},
+  "Jurassic World (Prime)":            {series:"Jurassic", num:4},
+
+  // Ghostbusters
+  "Ghostbusters II":                   {series:"Ghostbusters", num:2},
+  "Ghostbusters: Answer the Call":     {series:"Ghostbusters", num:3},
+
+  // Men in Black
+  "Men in Black":                      {series:"Men in Black", num:1},
+  "Men in Black 2":                    {series:"Men in Black", num:2},
+  "Men in Black 3":                    {series:"Men in Black", num:3},
+
+  // Mission Impossible
+  "Mission: Impossible – Rogue Nation":{series:"Mission: Impossible", num:5},
+  "Mission: Impossible – Fallout":     {series:"Mission: Impossible", num:6},
+
+  // John Wick
+  "John Wick":                         {series:"John Wick", num:1},
+  "John Wick (Prime)":                 {series:"John Wick", num:1},
+  "John Wick: Chapter 2":              {series:"John Wick", num:2},
+
+  // Conjuring
+  "The Conjuring":                     {series:"The Conjuring", num:1},
+  "The Conjuring 2":                   {series:"The Conjuring", num:2},
+
+  // Scary Movie
+  "Scary Movie":                       {series:"Scary Movie", num:1},
+  "Scary Movie 3":                     {series:"Scary Movie", num:3},
+  "Scary Movie 4":                     {series:"Scary Movie", num:4},
+
+  // Paranormal Activity
+  "Paranormal Activity":               {series:"Paranormal Activity", num:1},
+  "Paranormal Activity (Prime)":       {series:"Paranormal Activity", num:1},
+
+  // It
+  "It (2017)":                         {series:"It", num:1},
+  "It (Prime)":                        {series:"It", num:1},
+  "It Chapter Two":                    {series:"It", num:2},
+
+  // Pitch Perfect
+  "Pitch Perfect":                     {series:"Pitch Perfect", num:1},
+  "Pitch Perfect (Prime)":             {series:"Pitch Perfect", num:1},
+  "Pitch Perfect 3":                   {series:"Pitch Perfect", num:3},
+
+  // Bad Moms
+  "Bad Moms":                          {series:"Bad Moms", num:1},
+  "A Bad Moms Christmas":              {series:"Bad Moms", num:2},
+
+  // Hotel Transylvania
+  "Hotel Transylvania":                {series:"Hotel Transylvania", num:1},
+  "Hotel Transylvania 2":              {series:"Hotel Transylvania", num:2},
+  "Hotel Transylvania 3":              {series:"Hotel Transylvania", num:3},
+  "Hotel Transylvania 3 (Prime)":      {series:"Hotel Transylvania", num:3},
+
+  // Trolls
+  "Trolls (Prime)":                    {series:"Trolls", num:1},
+  "Trolls Holiday":                    {series:"Trolls", num:"1.5"},
+
+  // Despicable Me / Minions
+  "Despicable Me":                     {series:"Despicable Me", num:1},
+  "Despicable Me 2":                   {series:"Despicable Me", num:2},
+  "Despicable Me 2 (Prime)":           {series:"Despicable Me", num:2},
+  "Despicable Me 3":                   {series:"Despicable Me", num:3},
+  "Minions":                           {series:"Despicable Me", num:"Prequel"},
+
+  // Kung Fu Panda
+  "Kung Fu Panda":                     {series:"Kung Fu Panda", num:1},
+  "Kung Fu Panda 3":                   {series:"Kung Fu Panda", num:3},
+
+  // How to Train Your Dragon
+  "How to Train Your Dragon: The Hidden World": {series:"How to Train Your Dragon", num:3},
+
+  // Addams Family
+  "The Addams Family":                 {series:"Addams Family", num:1},
+  "Addams Family Values":              {series:"Addams Family", num:2},
+
+  // Gremlins
+  "Gremlins 2: The New Batch":         {series:"Gremlins", num:2},
+
+  // Look Who's Talking
+  "Look Who's Talking Now!":           {series:"Look Who's Talking", num:3},
+  "Look Who's Talking Too":            {series:"Look Who's Talking", num:2},
+
+  // Lego
+  "The Lego Movie":                    {series:"Lego Movie", num:1},
+  "The Lego Movie 2: The Second Part": {series:"Lego Movie", num:2},
+  "The Lego Batman Movie":             {series:"Lego Movie", num:"Batman"},
+  "The Lego Ninjago Movie":            {series:"Lego Movie", num:"Ninjago"},
+
+  // Alvin
+  "Alvin and the Chipmunks: Chipwrecked":{series:"Alvin and the Chipmunks", num:3},
+
+  // Super Troopers
+  "Super Troopers":                    {series:"Super Troopers", num:1},
+  "Super Troopers 2":                  {series:"Super Troopers", num:2},
+
+  // Anchorman
+  "Anchorman":                         {series:"Anchorman", num:1},
+  "Anchorman 2":                       {series:"Anchorman", num:2},
+
+  // Monsters Inc
+  "Monsters, Inc.":                    {series:"Monsters, Inc.", num:1},
+  "Monsters University":               {series:"Monsters, Inc.", num:2},
+  "Monsters University (Prime)":       {series:"Monsters, Inc.", num:2},
+
+  // The Incredibles
+  "The Incredibles":                   {series:"The Incredibles", num:1},
+  "Incredibles 2":                     {series:"The Incredibles", num:2},
+
+  // Ralph
+  "Ralph Breaks the Internet":         {series:"Wreck-It Ralph", num:2},
+  "Wreck-It Ralph":                    {series:"Wreck-It Ralph", num:1},
+
+  // Cars
+  "Cars 3":                            {series:"Cars", num:3},
+
+  // Goosebumps
+  "Goosebumps":                        {series:"Goosebumps", num:1},
+  "Goosebumps 2: Haunted Halloween":   {series:"Goosebumps", num:2},
+
+  // Silent Hill
+  "Silent Hill":                       {series:"Silent Hill", num:1},
+  "Silent Hill (Prime)":               {series:"Silent Hill", num:1},
+  "Silent Hill Revelation":            {series:"Silent Hill", num:2},
+  "Return to Silent Hill":             {series:"Silent Hill", num:3},
+
+  // Ghost Rider
+  "Ghost Rider":                       {series:"Ghost Rider", num:1},
+  "Ghost Rider SF":                    {series:"Ghost Rider", num:1},
+
+  // Narnia
+  "Chronicles of Narnia":              {series:"Narnia", num:1},
+  "CoN: Prince Caspian":               {series:"Narnia", num:2},
+
+  // Unbreakable trilogy
+  "Unbreakable":                       {series:"Unbreakable Trilogy", num:1},
+  "Split":                             {series:"Unbreakable Trilogy", num:2},
+  "Glass":                             {series:"Unbreakable Trilogy", num:3},
+
+  // Home Alone
+  "Home Alone":                        {series:"Home Alone", num:1},
+  "Home Alone 2: Lost in New York":    {series:"Home Alone", num:2},
+
+  // Teenage Mutant Ninja Turtles
+  "Ninja Turtles BR":                  {series:"TMNT", num:1},
+  "Ninja Turtles DVD":                 {series:"TMNT", num:1},
+  "Teenage Mutant Ninja Turtles: Out of the Shadows":{series:"TMNT", num:2},
+
+  // The Crow
+  "The Crow":                          {series:"The Crow", num:1},
+  "The Crow SF":                       {series:"The Crow", num:1},
+
+  // Hellboy
+  "Hellboy 2":                         {series:"Hellboy", num:2},
+  "Hellboy 2 SF":                      {series:"Hellboy", num:2},
+  "Hellboy (2019)":                    {series:"Hellboy", num:"Reboot"},
+
+  // Hot Tub Time Machine
+  "Hot Tub Time Machine":              {series:"Hot Tub Time Machine", num:1},
+  "Hot Tub Time Machine SF":           {series:"Hot Tub Time Machine", num:1},
+
+  // Dane Cook Tourgasm
+  "Dane Cook: Tourgasm 1":             {series:"Dane Cook: Tourgasm", num:1},
+  "Dane Cook: Tourgasm 2":             {series:"Dane Cook: Tourgasm", num:2},
+  "Dane Cook: Tourgasm 3":             {series:"Dane Cook: Tourgasm", num:3},
+
+  // The Strangers
+  "The Strangers":                     {series:"The Strangers", num:1},
+  "The Strangers: Chapter 2":          {series:"The Strangers", num:3},
+  "The Strangers (2023)":              {series:"The Strangers", num:2},
+
+  // Anaconda
+  "Anaconda (2024)":                   {series:"Anaconda", num:"Reboot"},
+
+  // Mary Poppins
+  "Mary Poppins Returns":              {series:"Mary Poppins", num:2},
+
+  // Avengers (standalone label for non-MCU numbered)
+  "Avengers: Infinity War":            {series:"MCU", num:19},
+  "Avengers: Endgame":                 {series:"MCU", num:22},
+
+  // Five Nights at Freddy's
+  "Five Nights at Freddy's 2":         {series:"Five Nights at Freddy's", num:2},
+
+  // Planet Terror / Grindhouse
+  "Planet Terror":                     {series:"Grindhouse", num:1},
+  "Planet Terror SF":                  {series:"Grindhouse", num:1},
+
+  // Watchmen
+  "Watchmen":                          {series:"Watchmen", num:1},
+  "Watchmen SF":                       {series:"Watchmen", num:1},
+};
+
+const ALL = [
+  // ── DVD COLLECTION ──────────────────────────────────────────────────────
+  {t:"Repomen",p:1,i:"A",s:"dvd"},{t:"Korn Deuce",p:1,i:"B",s:"dvd"},{t:"Korn See You",p:1,i:"C",s:"dvd"},{t:"Identity",p:1,i:"D",s:"dvd"},{t:"Vanilla Sky",p:1,i:"E",s:"dvd"},{t:"Cruel Intentions",p:1,i:"F",s:"dvd"},{t:"Mean Girls",p:1,i:"G",s:"dvd"},{t:"Hamlet 2",p:1,i:"H",s:"dvd"},
+  {t:"Scream 4",p:2,i:"A",s:"dvd"},{t:"Season of the Witch",p:2,i:"B",s:"dvd"},{t:"Haunting of Molly H",p:2,i:"C",s:"dvd"},{t:"Hairspray",p:2,i:"D",s:"dvd"},{t:"Bedazzled",p:2,i:"E",s:"dvd"},{t:"Charlie and the Chocolate Factory",p:2,i:"F",s:"dvd"},{t:"Forgetting Sarah Marshall",p:2,i:"G",s:"dvd"},{t:"Chicago",p:2,i:"H",s:"dvd"},
+  {t:"Seven",p:3,i:"A",s:"dvd"},{t:"Fargo",p:3,i:"B",s:"dvd"},{t:"Walk the Line",p:3,i:"C",s:"dvd"},{t:"My Best Friends Girl",p:3,i:"D",s:"dvd"},{t:"Heartbreakers",p:3,i:"E",s:"dvd"},{t:"The Scorpion King",p:3,i:"F",s:"dvd"},{t:"Year One",p:3,i:"G",s:"dvd"},{t:"American Psycho",p:3,i:"H",s:"dvd"},
+  {t:"Afterlife",p:4,i:"A",s:"dvd"},{t:"Fired Up",p:4,i:"B",s:"dvd"},{t:"G.I. Joe",p:4,i:"C",s:"dvd"},{t:"I, Robot",p:4,i:"D",s:"dvd"},{t:"Tropic Thunder",p:4,i:"E",s:"dvd"},{t:"Changeling",p:4,i:"F",s:"dvd"},{t:"Sin City",p:4,i:"G",s:"dvd"},{t:"Alone in the Dark",p:4,i:"H",s:"dvd"},
+  {t:"Dark Water",p:5,i:"A",s:"dvd"},{t:"Paranormal Activity",p:5,i:"B",s:"dvd"},{t:"The Big Lebowski",p:5,i:"C",s:"dvd"},{t:"Grandma's Boy",p:5,i:"D",s:"dvd"},{t:"Ultraviolet",p:5,i:"E",s:"dvd"},{t:"Righteous Kill",p:5,i:"F",s:"dvd"},{t:"The Brothers Grimm",p:5,i:"G",s:"dvd"},{t:"My Big Fat Greek Wedding",p:5,i:"H",s:"dvd"},
+  {t:"Ted",p:6,i:"A",s:"dvd"},{t:"Daybreakers",p:6,i:"B",s:"dvd"},{t:"The Crow",p:6,i:"C",s:"dvd"},{t:"The Crow SF",p:6,i:"D",s:"dvd"},{t:"Silent Hill",p:6,i:"E",s:"dvd"},{t:"Silent Hill Revelation",p:6,i:"F",s:"dvd"},{t:"Hancock",p:6,i:"G",s:"dvd"},{t:"Doom",p:6,i:"H",s:"dvd"},
+  {t:"Crash",p:7,i:"A",s:"dvd"},{t:"The Collector",p:7,i:"B",s:"dvd"},{t:"Natural Born Killers",p:7,i:"C",s:"dvd"},{t:"Public Enemies",p:7,i:"D",s:"dvd"},{t:"Inception",p:7,i:"E",s:"dvd"},{t:"Godsend",p:7,i:"F",s:"dvd"},{t:"Wedding Crashers",p:7,i:"G",s:"dvd"},{t:"I Am Legend",p:7,i:"H",s:"dvd"},
+  {t:"Cloverfield",p:8,i:"A",s:"dvd"},{t:"What Happens in Vegas",p:8,i:"B",s:"dvd"},{t:"Employee of the Month",p:8,i:"C",s:"dvd"},{t:"War of the Worlds",p:8,i:"D",s:"dvd"},{t:"The Strangers",p:8,i:"E",s:"dvd"},{t:"A Christmas Story",p:8,i:"F",s:"dvd"},{t:"Resident Evil",p:8,i:"G",s:"dvd"},{t:"Resident Evil: Afterlife",p:8,i:"H",s:"dvd"},
+  {t:"Resident Evil: Extinction",p:9,i:"A",s:"dvd"},{t:"Resident Evil: Apocalypse",p:9,i:"B",s:"dvd"},{t:"RE: Apocalypse SF",p:9,i:"C",s:"dvd"},{t:"Resident Evil: Degeneration",p:9,i:"D",s:"dvd"},{t:"Office Space",p:9,i:"E",s:"dvd"},{t:"1408",p:9,i:"F",s:"dvd"},{t:"The Count of Monte Cristo",p:9,i:"G",s:"dvd"},{t:"She's Out of My League",p:9,i:"H",s:"dvd"},
+  {t:"Sweeney Todd",p:10,i:"A",s:"dvd"},{t:"Wild Hogs",p:10,i:"B",s:"dvd"},{t:"The Fog",p:10,i:"C",s:"dvd"},{t:"Django Unchained",p:10,i:"D",s:"dvd"},{t:"The Changeling",p:10,i:"E",s:"dvd"},{t:"The Rules of Attraction",p:10,i:"F",s:"dvd"},{t:"Cry-Wolf",p:10,i:"G",s:"dvd"},{t:"Halloween",p:10,i:"H",s:"dvd"},
+  {t:"Knowing",p:11,i:"A",s:"dvd"},{t:"The Box",p:11,i:"B",s:"dvd"},{t:"300",p:11,i:"C",s:"dvd"},{t:"300 SF",p:11,i:"D",s:"dvd"},{t:"Orphan",p:11,i:"E",s:"dvd"},{t:"Gladiator",p:11,i:"F",s:"dvd"},{t:"Kill Bill Vol. 1",p:11,i:"G",s:"dvd"},{t:"Kill Bill Vol. 2",p:11,i:"H",s:"dvd"},
+  {t:"What Lies Beneath",p:12,i:"A",s:"dvd"},{t:"American History X",p:12,i:"B",s:"dvd"},{t:"Memoirs of a Geisha",p:12,i:"C",s:"dvd"},{t:"Memoirs of a Geisha SF",p:12,i:"D",s:"dvd"},{t:"Ghost Ship",p:12,i:"E",s:"dvd"},{t:"Gothika",p:12,i:"F",s:"dvd"},{t:"Shaun of the Dead",p:12,i:"G",s:"dvd"},{t:"The Phantom of the Opera",p:12,i:"H",s:"dvd"},
+  {t:"LoR: Fellowship of the Ring",p:13,i:"A",s:"dvd"},{t:"LoR: Fellowship of the Ring SF",p:13,i:"B",s:"dvd"},{t:"LoR: The Two Towers",p:13,i:"C",s:"dvd"},{t:"LoR: The Two Towers SF",p:13,i:"D",s:"dvd"},{t:"LoR: Return of the King",p:13,i:"E",s:"dvd"},{t:"LoR: Return of the King SF",p:13,i:"F",s:"dvd"},{t:"Eternal Sunshine of a Spotless Mind",p:13,i:"G",s:"dvd"},{t:"Valkyrie",p:13,i:"H",s:"dvd"},
+  {t:"Equilibrium",p:14,i:"A",s:"dvd"},{t:"Moulin Rouge",p:14,i:"B",s:"dvd"},{t:"Zack and Miri Make a Porno",p:14,i:"C",s:"dvd"},{t:"Zack and Miri Make a Porno SF",p:14,i:"D",s:"dvd"},{t:"The Fifth Element",p:14,i:"E",s:"dvd"},{t:"The Departed",p:14,i:"F",s:"dvd"},{t:"The Rocky Horror Picture Show",p:14,i:"G",s:"dvd"},{t:"The Wrestler",p:14,i:"H",s:"dvd"},
+  {t:"Baseketball",p:15,i:"A",s:"dvd"},{t:"The Stepford Wives",p:15,i:"B",s:"dvd"},{t:"The Devil's Rejects",p:15,i:"C",s:"dvd"},{t:"The Devil's Rejects SF",p:15,i:"D",s:"dvd"},{t:"Dungeons and Dragons",p:15,i:"E",s:"dvd"},{t:"Ender's Game",p:15,i:"F",s:"dvd"},{t:"The Grudge",p:15,i:"G",s:"dvd"},{t:"I Love You, Man",p:15,i:"H",s:"dvd"},
+  {t:"Hot Tub Time Machine",p:16,i:"A",s:"dvd"},{t:"Family Guy – SKL and LKS",p:16,i:"B",s:"dvd"},{t:"Dane Cook – Original HBO",p:16,i:"C",s:"dvd"},{t:"Dane Cook – SF",p:16,i:"D",s:"dvd"},{t:"The Covenant",p:16,i:"E",s:"dvd"},{t:"Serenity",p:16,i:"F",s:"dvd"},{t:"Fight Club",p:16,i:"G",s:"dvd"},{t:"Legends of the Fall",p:16,i:"H",s:"dvd"},
+  {t:"They",p:17,i:"A",s:"dvd"},{t:"Rock of Ages",p:17,i:"B",s:"dvd"},{t:"Immortals",p:17,i:"C",s:"dvd"},{t:"Hot Tub Time Machine SF",p:17,i:"D",s:"dvd"},{t:"Dark Floors",p:17,i:"E",s:"dvd"},{t:"Role Models",p:17,i:"F",s:"dvd"},{t:"Date Movie",p:17,i:"G",s:"dvd"},{t:"The Bounty Hunter",p:17,i:"H",s:"dvd"},
+  {t:"Tombstone",p:18,i:"A",s:"dvd"},{t:"Tombstone SF",p:18,i:"B",s:"dvd"},{t:"Hellboy 2",p:18,i:"C",s:"dvd"},{t:"Hellboy 2 SF",p:18,i:"D",s:"dvd"},{t:"Blades of Glory",p:18,i:"E",s:"dvd"},{t:"Christmas Vacation",p:18,i:"F",s:"dvd"},{t:"Smokin' Aces",p:18,i:"G",s:"dvd"},{t:"No Country for Old Men",p:18,i:"H",s:"dvd"},
+  {t:"The Men Who Stare at Goats",p:19,i:"A",s:"dvd"},{t:"Eagle Eye",p:19,i:"B",s:"dvd"},{t:"Clerks 2",p:19,i:"C",s:"dvd"},{t:"Clerks 2 SF",p:19,i:"D",s:"dvd"},{t:"Run Fatboy Run",p:19,i:"E",s:"dvd"},{t:"Yes Man",p:19,i:"F",s:"dvd"},{t:"The Exorcism of Emily Rose",p:19,i:"G",s:"dvd"},{t:"Bassmaster",p:19,i:"H",s:"dvd"},
+  {t:"Wolf Creek",p:20,i:"A",s:"dvd"},{t:"Dawn of the Dead",p:20,i:"B",s:"dvd"},{t:"Horrible Bosses",p:20,i:"C",s:"dvd"},{t:"Snakes on a Plane",p:20,i:"D",s:"dvd"},{t:"The Butterfly Effect",p:20,i:"E",s:"dvd"},{t:"This Is the End",p:20,i:"F",s:"dvd"},{t:"Borat",p:20,i:"G",s:"dvd"},{t:"Good Luck Chuck",p:20,i:"H",s:"dvd"},
+  {t:"Boogeyman",p:21,i:"A",s:"dvd"},{t:"The Island",p:21,i:"B",s:"dvd"},{t:"Planet Terror",p:21,i:"C",s:"dvd"},{t:"Planet Terror SF",p:21,i:"D",s:"dvd"},{t:"PotC: Curse of the Black Pearl",p:21,i:"E",s:"dvd"},{t:"PotC: Curse of the Black Pearl SF",p:21,i:"F",s:"dvd"},{t:"PotC: Dead Man's Chest",p:21,i:"G",s:"dvd"},{t:"PotC: Dead Man's Chest SF",p:21,i:"H",s:"dvd"},
+  {t:"PotC: At World's End",p:22,i:"A",s:"dvd"},{t:"Dane Cook: Tourgasm 1",p:22,i:"B",s:"dvd"},{t:"Dane Cook: Tourgasm 2",p:22,i:"C",s:"dvd"},{t:"Dane Cook: Tourgasm 3",p:22,i:"D",s:"dvd"},{t:"Corky Romano",p:22,i:"E",s:"dvd"},{t:"The Uninvited",p:22,i:"F",s:"dvd"},{t:"Alien",p:22,i:"G",s:"dvd"},{t:"Aliens",p:22,i:"H",s:"dvd"},
+  {t:"Alien 3",p:23,i:"A",s:"dvd"},{t:"Alien Resurrection",p:23,i:"B",s:"dvd"},{t:"Alien Resurrection SF",p:23,i:"C",s:"dvd"},{t:"AvP",p:23,i:"D",s:"dvd"},{t:"The 40-Year-Old Virgin",p:23,i:"E",s:"dvd"},{t:"Interview with the Vampire",p:23,i:"F",s:"dvd"},{t:"Superbad",p:23,i:"G",s:"dvd"},{t:"The Last Boy Scout",p:23,i:"H",s:"dvd"},
+  {t:"Terminator Salvation",p:24,i:"A",s:"dvd"},{t:"Idiocracy",p:24,i:"B",s:"dvd"},{t:"Funny People",p:24,i:"C",s:"dvd"},{t:"Family Guy: Untold Story",p:24,i:"D",s:"dvd"},{t:"Hulk",p:24,i:"E",s:"dvd"},{t:"Hot Fuzz",p:24,i:"F",s:"dvd"},{t:"The Spirit",p:24,i:"G",s:"dvd"},{t:"Blindness",p:24,i:"H",s:"dvd"},
+  {t:"Little Miss Sunshine",p:25,i:"A",s:"dvd"},{t:"The Lost Boys",p:25,i:"B",s:"dvd"},{t:"My Bloody Valentine 2D",p:25,i:"C",s:"dvd"},{t:"My Bloody Valentine 3D",p:25,i:"D",s:"dvd"},{t:"Super Troopers",p:25,i:"E",s:"dvd"},{t:"Sexdrive",p:25,i:"F",s:"dvd"},{t:"Stay",p:25,i:"G",s:"dvd"},{t:"Quills",p:25,i:"H",s:"dvd"},
+  {t:"Repo! The Genetic Opera",p:26,i:"A",s:"dvd"},{t:"Secret Window",p:26,i:"B",s:"dvd"},{t:"Rent",p:26,i:"C",s:"dvd"},{t:"Rent SF",p:26,i:"D",s:"dvd"},{t:"The Wolf of Wall Street",p:26,i:"E",s:"dvd"},{t:"A Clockwork Orange",p:26,i:"F",s:"dvd"},{t:"Let Me In",p:26,i:"G",s:"dvd"},{t:"Saved!",p:26,i:"H",s:"dvd"},
+  {t:"Mirrors",p:27,i:"A",s:"dvd"},{t:"Alice in Wonderland",p:27,i:"B",s:"dvd"},{t:"Avatar DVD",p:27,i:"C",s:"dvd"},{t:"Avatar BR",p:27,i:"D",s:"dvd"},{t:"Captain America BR",p:27,i:"E",s:"dvd"},{t:"Captain America DVD",p:27,i:"F",s:"dvd"},{t:"The Wolverine",p:27,i:"G",s:"dvd"},{t:"X-Men Origins: Wolverine",p:27,i:"H",s:"dvd"},
+  {t:"X3: The Last Stand",p:28,i:"A",s:"dvd"},{t:"X2",p:28,i:"C",s:"dvd"},{t:"X2 SF",p:28,i:"D",s:"dvd"},{t:"Evil Dead",p:28,i:"E",s:"dvd"},{t:"Les Misérables",p:28,i:"F",s:"dvd"},{t:"Queen of the Damned",p:28,i:"G",s:"dvd"},{t:"Shooter",p:28,i:"H",s:"dvd"},
+  {t:"Star Trek",p:29,i:"A",s:"dvd"},{t:"Star Trek SF",p:29,i:"B",s:"dvd"},{t:"Star Trek Into Darkness BR",p:29,i:"C",s:"dvd"},{t:"Star Trek Into Darkness DVD",p:29,i:"D",s:"dvd"},{t:"Oblivion BR",p:29,i:"E",s:"dvd"},{t:"Oblivion DVD",p:29,i:"F",s:"dvd"},{t:"Choke",p:29,i:"G",s:"dvd"},{t:"Talladega Nights",p:29,i:"H",s:"dvd"},
+  {t:"Chronicles of Narnia",p:30,i:"A",s:"dvd"},{t:"CoN: Prince Caspian",p:30,i:"B",s:"dvd"},{t:"Lord of War",p:30,i:"C",s:"dvd"},{t:"Due Date",p:30,i:"D",s:"dvd"},{t:"The Hobbit DVD",p:30,i:"E",s:"dvd"},{t:"The Hobbit SF",p:30,i:"F",s:"dvd"},{t:"The Hobbit BR",p:30,i:"G",s:"dvd"},
+  {t:"Hansel and Gretel DVD",p:31,i:"A",s:"dvd"},{t:"Hansel and Gretel BR",p:31,i:"B",s:"dvd"},{t:"Donnie Darko",p:31,i:"C",s:"dvd"},{t:"Donnie Darko SF",p:31,i:"D",s:"dvd"},{t:"The Number 23",p:31,i:"E",s:"dvd"},{t:"Step Brothers",p:31,i:"F",s:"dvd"},{t:"The Proposal",p:31,i:"G",s:"dvd"},{t:"Couples Retreat",p:31,i:"H",s:"dvd"},
+  {t:"The Haunting in Connecticut",p:32,i:"A",s:"dvd"},{t:"The Book of Eli",p:32,i:"B",s:"dvd"},{t:"We're the Millers – Theatrical",p:32,i:"C",s:"dvd"},{t:"We're the Millers – Extended",p:32,i:"D",s:"dvd"},{t:"Oz the Great and Powerful",p:32,i:"E",s:"dvd"},{t:"Easy A",p:32,i:"F",s:"dvd"},{t:"Silver Linings Playbook",p:32,i:"G",s:"dvd"},{t:"The King's Speech",p:32,i:"H",s:"dvd"},
+  {t:"Adventureland",p:33,i:"A",s:"dvd"},{t:"The Rocker",p:33,i:"B",s:"dvd"},{t:"The Switch",p:33,i:"C",s:"dvd"},{t:"The Other Guys",p:33,i:"D",s:"dvd"},{t:"Red",p:33,i:"E",s:"dvd"},{t:"Percy Jackson: The Lightning Thief",p:33,i:"F",s:"dvd"},{t:"Wanted",p:33,i:"G",s:"dvd"},{t:"Prancer",p:33,i:"H",s:"dvd"},
+  {t:"The Sorcerer's Apprentice BR",p:34,i:"A",s:"dvd"},{t:"The Sorcerer's Apprentice DVD",p:34,i:"B",s:"dvd"},{t:"Land of the Lost",p:34,i:"C",s:"dvd"},{t:"Jennifer's Body",p:34,i:"D",s:"dvd"},{t:"The Amazing Spider-Man BR",p:34,i:"E",s:"dvd"},{t:"The Amazing Spider-Man SF",p:34,i:"F",s:"dvd"},{t:"The Amazing Spider-Man DVD",p:34,i:"G",s:"dvd"},{t:"Spider-Man 3",p:34,i:"H",s:"dvd"},
+  {t:"Underworld",p:35,i:"A",s:"dvd"},{t:"Underworld SF",p:35,i:"B",s:"dvd"},{t:"Underworld: Awakening",p:35,i:"C",s:"dvd"},{t:"HP: The Sorcerer's Stone",p:35,i:"E",s:"dvd"},{t:"HP: The Sorcerer's Stone SF",p:35,i:"F",s:"dvd"},{t:"HP: Chamber of Secrets",p:35,i:"G",s:"dvd"},{t:"HP: Chamber of Secrets SF",p:35,i:"H",s:"dvd"},
+  {t:"HP: Prisoner of Azkaban",p:36,i:"A",s:"dvd"},{t:"HP: Prisoner of Azkaban SF",p:36,i:"B",s:"dvd"},{t:"HP: Goblet of Fire",p:36,i:"C",s:"dvd"},{t:"HP: Order of the Phoenix",p:36,i:"E",s:"dvd"},{t:"HP: Order of the Phoenix SF",p:36,i:"F",s:"dvd"},{t:"HP: Half-Blood Prince",p:36,i:"G",s:"dvd"},{t:"HP: Half-Blood Prince SF",p:36,i:"H",s:"dvd"},
+  {t:"HP: Deathly Hallows Pt 1 BR",p:37,i:"A",s:"dvd"},{t:"HP: Deathly Hallows Pt 1 DVD",p:37,i:"B",s:"dvd"},{t:"HP: Deathly Hallows Pt 2",p:37,i:"C",s:"dvd"},{t:"HP: Deathly Hallows Pt 2 SF",p:37,i:"D",s:"dvd"},{t:"Iron Man 2",p:37,i:"E",s:"dvd"},{t:"Iron Man 2 SF",p:37,i:"F",s:"dvd"},{t:"Iron Man 2 DVD",p:37,i:"G",s:"dvd"},{t:"League of Extraordinary Gentlemen",p:37,i:"H",s:"dvd"},
+  {t:"Anchorman",p:38,i:"A",s:"dvd"},{t:"Anchorman 2",p:38,i:"B",s:"dvd"},{t:"The Losers",p:38,i:"C",s:"dvd"},{t:"Hulk VS",p:38,i:"D",s:"dvd"},{t:"FF7: Advent Children",p:38,i:"E",s:"dvd"},{t:"FF7: Advent Children SF",p:38,i:"F",s:"dvd"},{t:"The Machinist",p:38,i:"G",s:"dvd"},{t:"Fun with Dick and Jane",p:38,i:"H",s:"dvd"},
+  {t:"Pulp Fiction",p:39,i:"A",s:"dvd"},{t:"Pulp Fiction SF",p:39,i:"B",s:"dvd"},{t:"Reservoir Dogs Widescreen",p:39,i:"C",s:"dvd"},{t:"Reservoir Dogs Fullscreen",p:39,i:"D",s:"dvd"},{t:"Avengers",p:39,i:"E",s:"dvd"},{t:"Body of Lies",p:39,i:"F",s:"dvd"},{t:"Abraham Lincoln: Vampire Hunter",p:39,i:"G",s:"dvd"},{t:"Balls of Fury",p:39,i:"H",s:"dvd"},
+  {t:"Hunger Games",p:40,i:"A",s:"dvd"},{t:"Hunger Games SF",p:40,i:"B",s:"dvd"},{t:"The Dark Knight",p:40,i:"E",s:"dvd"},{t:"The Dark Knight SF",p:40,i:"F",s:"dvd"},{t:"The Dark Knight Rises",p:40,i:"G",s:"dvd"},{t:"The Dark Knight Rises SF",p:40,i:"H",s:"dvd"},
+  {t:"The Mummy",p:41,i:"A",s:"dvd"},{t:"The Mummy Returns",p:41,i:"B",s:"dvd"},{t:"The Mummy: Tomb of the Dragon Emperor",p:41,i:"C",s:"dvd"},{t:"Ninja Assassin",p:41,i:"E",s:"dvd"},{t:"Zombieland",p:41,i:"F",s:"dvd"},{t:"Prometheus",p:41,i:"G",s:"dvd"},{t:"2012",p:41,i:"H",s:"dvd"},
+  {t:"District 9",p:42,i:"A",s:"dvd"},{t:"Black Swan",p:42,i:"B",s:"dvd"},{t:"Taken",p:42,i:"C",s:"dvd"},{t:"Punisher: War Zone",p:42,i:"D",s:"dvd"},{t:"Inglourious Basterds",p:42,i:"E",s:"dvd"},{t:"Max Payne",p:42,i:"F",s:"dvd"},{t:"Appaloosa",p:42,i:"G",s:"dvd"},{t:"Quarantine",p:42,i:"H",s:"dvd"},
+  {t:"Matrix Revolutions",p:43,i:"A",s:"dvd"},{t:"Matrix Revolutions SF",p:43,i:"B",s:"dvd"},{t:"Matrix Reloaded",p:43,i:"C",s:"dvd"},{t:"Matrix Reloaded SF",p:43,i:"D",s:"dvd"},{t:"Transformers",p:43,i:"E",s:"dvd"},{t:"Transformers: Revenge of the Fallen",p:43,i:"F",s:"dvd"},{t:"Transformers: RotF SF",p:43,i:"G",s:"dvd"},{t:"National Treasure 2",p:43,i:"H",s:"dvd"},
+  {t:"Kick-Ass BR",p:44,i:"A",s:"dvd"},{t:"Kick-Ass DVD",p:44,i:"B",s:"dvd"},{t:"The Wolfman",p:44,i:"C",s:"dvd"},{t:"Drag Me to Hell",p:44,i:"D",s:"dvd"},{t:"Twilight",p:44,i:"E",s:"dvd"},{t:"New Moon",p:44,i:"F",s:"dvd"},{t:"Eclipse",p:44,i:"G",s:"dvd"},{t:"Breaking Dawn Part 1",p:44,i:"H",s:"dvd"},
+  {t:"9",p:45,i:"A",s:"dvd"},{t:"Romeo & Juliet",p:45,i:"B",s:"dvd"},{t:"Sherlock Holmes",p:45,i:"C",s:"dvd"},{t:"Up in the Air",p:45,i:"D",s:"dvd"},{t:"Dinner for Schmucks",p:45,i:"E",s:"dvd"},{t:"Burn After Reading",p:45,i:"F",s:"dvd"},{t:"Gamer",p:45,i:"G",s:"dvd"},{t:"The Informant!",p:45,i:"H",s:"dvd"},
+  {t:"Watchmen",p:46,i:"A",s:"dvd"},{t:"Watchmen SF",p:46,i:"B",s:"dvd"},{t:"Observe and Report",p:46,i:"C",s:"dvd"},{t:"Salt",p:46,i:"D",s:"dvd"},{t:"Pineapple Express",p:46,i:"E",s:"dvd"},{t:"Nine",p:46,i:"F",s:"dvd"},{t:"The Hangover",p:46,i:"G",s:"dvd"},{t:"Shutter Island",p:46,i:"H",s:"dvd"},
+  {t:"28 Weeks Later",p:47,i:"A",s:"dvd"},{t:"Thor: The Dark World",p:47,i:"B",s:"dvd"},{t:"Ghost Rider",p:47,i:"C",s:"dvd"},{t:"Ghost Rider SF",p:47,i:"D",s:"dvd"},{t:"Killers",p:47,i:"E",s:"dvd"},{t:"Saw",p:47,i:"F",s:"dvd"},{t:"Saw IV",p:47,i:"G",s:"dvd"},{t:"Saw V",p:47,i:"H",s:"dvd"},
+  {t:"Jurassic World",p:48,i:"A",s:"dvd"},{t:"Pitch Perfect",p:48,i:"B",s:"dvd"},{t:"Christmas Vacation (48)",p:48,i:"C",s:"dvd"},{t:"American Hustle",p:48,i:"D",s:"dvd"},{t:"Ninja Turtles BR",p:48,i:"E",s:"dvd"},{t:"Ninja Turtles DVD",p:48,i:"F",s:"dvd"},{t:"Mad Max",p:48,i:"G",s:"dvd"},{t:"Spaceballs",p:48,i:"H",s:"dvd"},
+  {t:"Ant-Man",p:49,i:"A",s:"dvd"},{t:"Guardians of the Galaxy Vol. 2",p:49,i:"B",s:"dvd"},
+
+  // ── PRIME VIDEO ─────────────────────────────────────────────────────────
+  {t:"Scream 7",s:"prime"},{t:"Send Help",s:"prime"},{t:"Cold Storage",s:"prime"},{t:"Dracula (2024)",s:"prime"},{t:"Return to Silent Hill",s:"prime"},{t:"Rental Family",s:"prime"},
+  {t:"Dust Bunny",s:"prime"},{t:"The Housemaid",s:"prime"},{t:"Anaconda (2024)",s:"prime"},{t:"Spawn",s:"prime"},{t:"Five Nights at Freddy's 2",s:"prime"},{t:"Silent Night (2023)",s:"prime"},
+  {t:"Keeper",s:"prime"},{t:"Good Boy",s:"prime"},{t:"The Black Phone",s:"prime"},{t:"Mama",s:"prime"},{t:"Scary Movie 3",s:"prime"},{t:"Scary Movie 4",s:"prime"},
+  {t:"Scary Movie",s:"prime"},{t:"The Strangers: Chapter 2",s:"prime"},{t:"The Strangers (2023)",s:"prime"},{t:"The Toxic Avenger",s:"prime"},{t:"28 Years Later",s:"prime"},{t:"The Mummy Returns",s:"prime"},
+  {t:"The Mummy (1999)",s:"prime"},{t:"Alien: Romulus",s:"prime"},{t:"Aliens Special Edition",s:"prime"},{t:"Don't Log Off",s:"prime"},{t:"Found Footage",s:"prime"},{t:"Thunderbolts",s:"prime"},
+  {t:"Borderline",s:"prime"},{t:"Annihilation",s:"prime"},{t:"Bring Her Back",s:"prime"},{t:"28 Days Later",s:"prime"},{t:"The Butterfly Effect (Prime)",s:"prime"},{t:"Bridesmaids",s:"prime"},
+  {t:"We're the Millers (Prime)",s:"prime"},{t:"What Happens in Vegas (Prime)",s:"prime"},{t:"Terrifier 3",s:"prime"},{t:"Prometheus (Prime)",s:"prime"},{t:"Abigail",s:"prime"},
+  {t:"The Fifth Element (Prime)",s:"prime"},{t:"The Fourth Kind",s:"prime"},{t:"Queen of the Damned (Prime)",s:"prime"},{t:"Rock of Ages (Prime)",s:"prime"},{t:"Unfriended: Dark Web",s:"prime"},{t:"AvP: Requiem",s:"prime"},
+  {t:"Alien vs. Predator (Prime)",s:"prime"},{t:"The Amityville Horror",s:"prime"},{t:"Friday the 13th",s:"prime"},{t:"Silent Hill (Prime)",s:"prime"},{t:"The Hangover (Prime)",s:"prime"},{t:"Step Brothers (Prime)",s:"prime"},
+  {t:"For Richer or Poorer",s:"prime"},{t:"Hunger Games: Mockingjay Pt 2",s:"prime"},{t:"Alien (Prime)",s:"prime"},{t:"Alien 3 (Prime)",s:"prime"},{t:"The Family Man",s:"prime"},{t:"John Wick",s:"prime"},
+  {t:"Ghost Ship (Prime)",s:"prime"},{t:"The Blair Witch Project",s:"prime"},{t:"Scream (1996)",s:"prime"},{t:"Friday the 13th (2009)",s:"prime"},{t:"Freddy vs. Jason",s:"prime"},{t:"Paranormal Activity (Prime)",s:"prime"},
+  {t:"Insidious",s:"prime"},{t:"The Craft",s:"prime"},{t:"Killer Klowns from Outer Space",s:"prime"},{t:"The Rainmaker",s:"prime"},{t:"It (2017)",s:"prime"},{t:"White Oleander",s:"prime"},
+  {t:"A Nightmare on Elm Street",s:"prime"},{t:"Waiting...",s:"prime"},{t:"Starship Troopers",s:"prime"},{t:"Resident Evil (Prime)",s:"prime"},{t:"Very Bad Things",s:"prime"},{t:"How to Lose a Guy in 10 Days",s:"prime"},
+  {t:"300 (Prime)",s:"prime"},{t:"Bring It On",s:"prime"},{t:"Romeo + Juliet (1996)",s:"prime"},{t:"Freaky",s:"prime"},{t:"Hunger Games: Catching Fire",s:"prime"},{t:"Hotel Transylvania 3",s:"prime"},
+  {t:"Breaking Dawn Part 2",s:"prime"},{t:"Breaking Dawn Part 1 (Prime)",s:"prime"},{t:"Eclipse (Prime)",s:"prime"},{t:"New Moon (Prime)",s:"prime"},{t:"Twilight (Prime)",s:"prime"},{t:"Christmas with the Kranks",s:"prime"},
+  {t:"The Wedding Singer",s:"prime"},{t:"Love Actually",s:"prime"},{t:"Bad Moms",s:"prime"},{t:"Constantine",s:"prime"},{t:"Scream 2",s:"prime"},{t:"Scream (Prime)",s:"prime"},
+  {t:"Thirteen Ghosts",s:"prime"},{t:"Shaun of the Dead (Prime)",s:"prime"},{t:"The Conjuring",s:"prime"},{t:"Trick 'r Treat",s:"prime"},{t:"Alien Resurrection (Prime)",s:"prime"},{t:"Bruce Almighty",s:"prime"},
+  {t:"Pitch Perfect (Prime)",s:"prime"},{t:"Bombshell",s:"prime"},{t:"The Hunger Games (Prime)",s:"prime"},{t:"Batman Forever",s:"prime"},{t:"Arctic Dogs",s:"prime"},{t:"Jojo Rabbit",s:"prime"},
+  {t:"Trolls (Prime)",s:"prime"},{t:"The Boss Baby",s:"prime"},{t:"Resident Evil: The Final Chapter",s:"prime"},{t:"The Holiday",s:"prime"},{t:"Fred Claus",s:"prime"},{t:"Four Christmases",s:"prime"},
+  {t:"It Chapter Two",s:"prime"},{t:"Fantastic Mr. Fox",s:"prime"},{t:"The Scorpion King (Prime)",s:"prime"},{t:"Bedazzled (Prime)",s:"prime"},{t:"Captain Underpants: The First Epic Movie",s:"prime"},{t:"Turbo",s:"prime"},
+  {t:"The Witches",s:"prime"},{t:"Addams Family Values",s:"prime"},{t:"The Addams Family",s:"prime"},{t:"Spider-Man: Far From Home",s:"prime"},{t:"101 Dalmatians",s:"prime"},{t:"Aliens (Special Edition)",s:"prime"},
+  {t:"The Hunchback of Notre Dame",s:"prime"},{t:"The Others",s:"prime"},{t:"Practical Magic",s:"prime"},{t:"The Secret Life of Pets 2",s:"prime"},{t:"The Hobbit",s:"prime"},{t:"Brightburn",s:"prime"},
+  {t:"Look Who's Talking Now!",s:"prime"},{t:"Alita: Battle Angel",s:"prime"},{t:"Avengers: Endgame",s:"prime"},{t:"UglyDolls",s:"prime"},{t:"Shazam!",s:"prime"},{t:"Hellboy (2019)",s:"prime"},
+  {t:"Gremlins 2: The New Batch",s:"prime"},{t:"My Best Friend's Girl (Prime)",s:"prime"},{t:"Wonder Park",s:"prime"},{t:"Good Burger",s:"prime"},{t:"Captain Marvel",s:"prime"},{t:"The SpongeBob Movie: Sponge Out of Water",s:"prime"},
+  {t:"The Rocky Horror Picture Show (Prime)",s:"prime"},{t:"Rio",s:"prime"},{t:"Home (2015)",s:"prime"},{t:"How to Train Your Dragon: The Hidden World",s:"prime"},{t:"Captain America: Civil War",s:"prime"},{t:"The Lego Movie 2: The Second Part",s:"prime"},
+  {t:"Fantastic Beasts: Crimes of Grindelwald",s:"prime"},{t:"Captain America: The First Avenger",s:"prime"},{t:"Glass",s:"prime"},{t:"Toy Story of Terror!",s:"prime"},{t:"The Greatest Showman",s:"prime"},{t:"Bumblebee",s:"prime"},
+  {t:"Mary Poppins Returns",s:"prime"},{t:"Your Highness",s:"prime"},{t:"Spider-Man: Into the Spider-Verse",s:"prime"},{t:"The Favourite",s:"prime"},{t:"Ralph Breaks the Internet",s:"prime"},{t:"Bohemian Rhapsody",s:"prime"},
+  {t:"The Grinch (2018)",s:"prime"},{t:"Unbreakable",s:"prime"},{t:"Once Upon a Deadpool",s:"prime"},{t:"Goosebumps 2: Haunted Halloween",s:"prime"},{t:"Men in Black 3",s:"prime"},{t:"Men in Black 2",s:"prime"},
+  {t:"Men in Black",s:"prime"},{t:"A Christmas Story (Prime)",s:"prime"},{t:"The Family Stone",s:"prime"},{t:"Venom",s:"prime"},{t:"Bedtime Stories",s:"prime"},{t:"Deadpool 2",s:"prime"},
+  {t:"He's Out There",s:"prime"},{t:"Small Foot",s:"prime"},{t:"The Polar Express",s:"prime"},{t:"Look Who's Talking Too",s:"prime"},{t:"Daddy's Home",s:"prime"},{t:"Mission: Impossible – Fallout",s:"prime"},
+  {t:"The Lion King",s:"prime"},{t:"Christopher Robin",s:"prime"},{t:"Beetlejuice",s:"prime"},{t:"Incredibles 2",s:"prime"},{t:"Teen Titans Go! to the Movies",s:"prime"},{t:"Mandy",s:"prime"},
+  {t:"Under Wraps",s:"prime"},{t:"Ant-Man and the Wasp",s:"prime"},{t:"Hotel Transylvania 3 (Prime)",s:"prime"},{t:"Hereditary",s:"prime"},{t:"Kung Fu Panda",s:"prime"},{t:"Kung Fu Panda 3",s:"prime"},
+  {t:"Goosebumps",s:"prime"},{t:"Labyrinth",s:"prime"},{t:"Avengers: Infinity War",s:"prime"},{t:"Black Panther: Wakanda Forever",s:"prime"},{t:"Super Troopers 2",s:"prime"},{t:"A Quiet Place",s:"prime"},
+  {t:"Blockers",s:"prime"},{t:"Sherlock Gnomes",s:"prime"},{t:"Shutter Island (Prime)",s:"prime"},{t:"Early Man",s:"prime"},{t:"Iron Man 2 (Prime)",s:"prime"},{t:"Black Panther",s:"prime"},
+  {t:"Game Night",s:"prime"},{t:"Peter Rabbit",s:"prime"},{t:"Ant-Man (Prime)",s:"prime"},{t:"Captain America: The Winter Soldier",s:"prime"},{t:"Thor: The Dark World (Prime)",s:"prime"},{t:"Thor",s:"prime"},
+  {t:"Toy Story 3",s:"prime"},{t:"Iron Man 3",s:"prime"},{t:"Guardians of the Galaxy",s:"prime"},{t:"Iron Man",s:"prime"},{t:"The Incredible Hulk",s:"prime"},{t:"Trolls Holiday",s:"prime"},
+  {t:"The Avengers",s:"prime"},{t:"Star Wars: The Force Awakens",s:"prime"},{t:"Coco",s:"prime"},{t:"Ferdinand",s:"prime"},{t:"Three Billboards Outside Ebbing Missouri",s:"prime"},{t:"Jumanji: Welcome to the Jungle",s:"prime"},
+  {t:"Pitch Perfect 3",s:"prime"},{t:"Thor: Ragnarok",s:"prime"},{t:"The Star",s:"prime"},{t:"Justice League",s:"prime"},{t:"A Bad Moms Christmas",s:"prime"},{t:"The Nut Job 2: Nutty by Nature",s:"prime"},
+  {t:"Mom and Dad",s:"prime"},{t:"Jigsaw",s:"prime"},{t:"Blade Runner 2049",s:"prime"},{t:"The Lego Ninjago Movie",s:"prime"},{t:"It (Prime)",s:"prime"},{t:"The Killing of a Sacred Deer",s:"prime"},
+  {t:"Minions",s:"prime"},{t:"mother!",s:"prime"},{t:"Home Alone 2: Lost in New York",s:"prime"},{t:"Mickey's Christmas Carol",s:"prime"},{t:"Christmas Vacation (Prime)",s:"prime"},{t:"Despicable Me 3",s:"prime"},
+  {t:"Home Alone",s:"prime"},{t:"Cars 3",s:"prime"},{t:"Alien: Covenant",s:"prime"},{t:"Rings",s:"prime"},{t:"Spider-Man: Homecoming",s:"prime"},{t:"Transformers: The Last Knight",s:"prime"},
+  {t:"Pirates of the Caribbean: Dead Men Tell No Tales",s:"prime"},{t:"Wonder Woman",s:"prime"},{t:"Split",s:"prime"},{t:"Guardians of the Galaxy Vol. 2",s:"prime"},{t:"The Belko Experiment",s:"prime"},{t:"Smurfs: The Lost Village",s:"prime"},
+  {t:"The Lego Batman Movie",s:"prime"},{t:"John Wick: Chapter 2",s:"prime"},{t:"Get Out",s:"prime"},{t:"Rock Dog",s:"prime"},{t:"Logan",s:"prime"},{t:"Pirates of the Caribbean: On Stranger Tides",s:"prime"},
+  {t:"Rogue One: A Star Wars Story",s:"prime"},{t:"Passengers",s:"prime"},{t:"Toy Story Toons: Hawaiian Vacation",s:"prime"},{t:"Toy Story Toons: Small Fry",s:"prime"},{t:"Monsters University",s:"prime"},{t:"A Dog's Purpose",s:"prime"},
+  {t:"Office Christmas Party",s:"prime"},{t:"Monster Trucks",s:"prime"},{t:"WALL-E",s:"prime"},{t:"Jurassic World (Prime)",s:"prime"},{t:"Fantastic Beasts and Where to Find Them",s:"prime"},{t:"Sing",s:"prime"},
+  {t:"Incarnate",s:"prime"},{t:"Moana",s:"prime"},{t:"Feast",s:"prime"},{t:"Nocturnal Animals",s:"prime"},{t:"Doctor Strange",s:"prime"},{t:"The Visit",s:"prime"},
+  {t:"Justice League: Gotham City Breakout",s:"prime"},{t:"The Lego Movie",s:"prime"},{t:"Toy Story: That Time Forgot",s:"prime"},{t:"Partysaurus Rex",s:"prime"},{t:"Minions 3 Mini-Movie Collection",s:"prime"},{t:"Mini-Movie Collection",s:"prime"},
+  {t:"Despicable Me 2",s:"prime"},{t:"Elf",s:"prime"},{t:"Storks",s:"prime"},{t:"The Grinch That Stole Christmas",s:"prime"},{t:"A Charlie Brown Christmas",s:"prime"},
+  {t:"The BFG",s:"prime"},{t:"Sausage Party",s:"prime"},{t:"Don't Breathe",s:"prime"},{t:"The Secret Life of Pets",s:"prime"},{t:"Suicide Squad (Extended Cut)",s:"prime"},{t:"Nine Lives",s:"prime"},
+  {t:"Kubo and the Two Strings",s:"prime"},{t:"Alice Through the Looking Glass",s:"prime"},{t:"Lava",s:"prime"},{t:"Piper",s:"prime"},{t:"Finding Dory",s:"prime"},{t:"Double Double Toil and Trouble",s:"prime"},
+  {t:"It's the Great Pumpkin Charlie Brown",s:"prime"},{t:"Monster House",s:"prime"},{t:"Hocus Pocus",s:"prime"},{t:"Star Trek Beyond",s:"prime"},{t:"Corpse Bride",s:"prime"},{t:"Ghostbusters: Answer the Call",s:"prime"},
+  {t:"The Nightmare Before Christmas",s:"prime"},{t:"Despicable Me",s:"prime"},{t:"Monsters University (Prime)",s:"prime"},{t:"Monsters, Inc.",s:"prime"},{t:"Warcraft",s:"prime"},{t:"Teenage Mutant Ninja Turtles: Out of the Shadows",s:"prime"},
+  {t:"Toy Story 2",s:"prime"},{t:"The Conjuring 2",s:"prime"},{t:"Sisters",s:"prime"},{t:"Toy Story",s:"prime"},{t:"The Incredibles",s:"prime"},{t:"Me Before You",s:"prime"},
+  {t:"The Angry Birds Movie",s:"prime"},{t:"Ghostbusters II",s:"prime"},{t:"Pokémon: The First Movie",s:"prime"},{t:"Batman v Superman: Dawn of Justice",s:"prime"},{t:"Zootopia",s:"prime"},{t:"Deadpool",s:"prime"},
+  {t:"Horton Hears a Who!",s:"prime"},{t:"Star Wars: The Force Awakens (Prime)",s:"prime"},{t:"The Hateful Eight",s:"prime"},{t:"The Peanuts Movie",s:"prime"},{t:"John Wick (Prime)",s:"prime"},{t:"The Good Dinosaur",s:"prime"},
+  {t:"The Martian",s:"prime"},{t:"Hotel Transylvania 2",s:"prime"},{t:"Teen Titans",s:"prime"},{t:"Mission: Impossible – Rogue Nation",s:"prime"},{t:"Inside Out",s:"prime"},{t:"Hotel Transylvania",s:"prime"},
+  {t:"Avengers: Age of Ultron",s:"prime"},{t:"Alvin and the Chipmunks: Chipwrecked",s:"prime"},{t:"The Chipmunk Adventure",s:"prime"},{t:"Jurassic Park",s:"prime"},{t:"Wreck-It Ralph",s:"prime"},{t:"Big Hero 6",s:"prime"},
+  {t:"Hunger Games: Mockingjay Pt 1",s:"prime"},{t:"Gone Girl",s:"prime"},
+];
+
+function getGenre(t) {
+  const x = t.toLowerCase();
+  if (/^hp:/.test(x)) return 'Harry Potter';
+  if (/^lor:|lord of the rings|^the hobbit|^hobbit$/.test(x)) return 'Lord of the Rings / Hobbit';
+  if (/^resident evil|^re: apocalypse/.test(x)) return 'Resident Evil';
+  if (/^alien |^aliens|^alien 3|^alien resurrection|^alien: romulus|^alien: covenant|^alien vs\.|^avp/.test(x)) return 'Alien Franchise';
+  if (/^potc:|dead men tell no tales|on stranger tides|dead man.s chest|at world.s end|curse of the black pearl/.test(x)) return 'Pirates of the Caribbean';
+  if (/^star wars|rogue one/.test(x)) return 'Star Wars';
+  if (/^hunger games|^the hunger games/.test(x)) return 'Hunger Games';
+  if (/^avengers|^iron man|^captain america|^thor|^black panther|^ant.man|^guardians|^spider.man|^doctor strange|^venom|^deadpool|^x.men|^x2|^x3|wolverine|^hulk|^shazam|^captain marvel|^justice league|^batman|^wonder woman|^logan|^bumblebee|^lego batman|^glass$|^unbreakable|^split$|^once upon a deadpool|^kick.ass/.test(x)) return 'Superhero';
+  if (/twilight|new moon|eclipse|breaking dawn|underworld|interview with the vampire|queen of the damned|daybreakers|let me in|the lost boys|dracula/.test(x)) return 'Vampire & Supernatural';
+  if (/^star trek/.test(x)) return 'Sci-Fi';
+  if (/^matrix|^transformers|^terminator|^2012$|^district 9|^i, robot|^i am legend|^war of the worlds|^oblivion|^annihilation|^blade runner|^rogue one|^passengers/.test(x)) return 'Sci-Fi';
+  if (/^saw |^saw$|^jigsaw/.test(x)) return 'Horror';
+  if (/^toy story|^the incredibles|^incredibles 2|^finding|^monsters|^coco$|^inside out|^moana|^ralph|^wall.e|^up$/.test(x)) return 'Pixar';
+  if (/^despicable|^minions|^the grinch|^sing$|^home \(|^turbo|^storks|^ferdinand|^the secret life of pets|^the nut job/.test(x)) return 'Illumination / Animation';
+  if (/^hotel transylvania|^the nightmare before christmas|^corpse bride|^the witches|^addams family|^monster house|hocus pocus/.test(x)) return 'Spooky Animation';
+  if (/^lion king|^christopher robin|^101 dalmatians|^hunchback|^practical magic|^look who.s talking|^gremlins|^labyrinth|^peter rabbit|under wraps|^big hero|^wreck.it|^zootopia|^alita|^wonder park|alvin|chipmunk adventure|^rio$|^smallfoot|^early man|arctic dogs|ugly dolls|sherlock gnomes|rock dog|^lego |^toy story toon|^partysaurus|^goosebumps|kung fu panda|^good burger|spongebob|^elf$|^the star$|^horton|peanuts movie|good dinosaur|a dog.s purpose|^home alone|cars 3|^bedtime stories|kubo|^lava$|^piper$|polar express|charlie brown|mickey.s christmas carol|^teen titans|^how to train your dragon|^the hobbit$/.test(x)) return 'Family / Animation';
+  if (/^conjuring|insidious|paranormal activity|^scream|nightmare on elm street|friday the 13th|freddy vs|halloween$|^it \(|^it chapter|hereditary|a quiet place|^mama$|^orphan|^mirrors|ghost ship|^the haunting|the others|^the visit|^dark water|wolf creek|boogeyman|the fog|alone in the dark|quarantine|the grudge|the exorcism|my bloody valentine|cry.wolf|^the strangers|^godsend|^gothika|^1408|^what lies beneath|^the uninvited|^evil dead|brightburn|^mandy|^incarnate|hocus pocus|^killer klowns|^he.s out there|^rings$|^sinister|^dark floors|^they$|^the collector|^amityville|^blair witch|^stay$|^quarantine|^insidious|^cold storage|^dust bunny|^keeper$|^good boy$|^dont log off|found footage|^the black phone|^terrifier|^bring her back|^abigail|^the fourth kind|^dracula/.test(x)) return 'Horror';
+  if (/shaun of the dead|zombieland|scary movie|trick.r treat|ghostbusters|thirteen ghosts|monster house|beetlejuice/.test(x)) return 'Horror-Comedy';
+  if (/^gladiator|^300|scorpion king|^g\.i\. joe|taken$|wanted$|shooter$|last boy scout|max payne|^salt$|national treasure|ninja assassin|league of extraordinary|^the mummy|^red$|body of lies|smokin|the covenant|serenity|doom$|ultraviolet|terminator|eagle eye|knowing$|i am legend|war of the worlds|prometheus|district 9|2012$|book of eli|gamer$|appaloosa|tombstone|the losers|mission: impossible|jurassic|^the martian|^passengers|starship troopers|^the belko|warcraft|^get out|jumanji|^logan$|^john wick|inception|^annihilation|^the island$|^cloverfield|snakes on a plane/.test(x)) return 'Action / Adventure';
+  if (/^blade runner|^split$|^glass$|^unbreakable|donnie darko|butterfly effect|the number 23|blindness|shutter island|the machinist|black swan|nocturnal animals|gone girl|no country|american psycho|^seven$|fargo$|pulp fiction|reservoir dogs|natural born killers|django|inglourious|american history x|crash$|the departed|righteous kill|sin city|public enemies|lord of war|valkyrie|the wrestler|killing of a sacred deer|mother!|the hateful eight|three billboards|the favourite|^salt$/.test(x)) return 'Thriller / Crime';
+  if (/walk the line|chicago|moulin rouge|rent$|les mis|phantom of the opera|sweeney todd|changeling|legends of the fall|king.s speech|silver linings|eternal sunshine|little miss sunshine|quills|up in the air|me before you|bohemian rhapsody|greatest showman|the family stone|bombshell/.test(x)) return 'Drama';
+  if (/anchorman|tropic thunder|superbad|year one|grandma.s boy|wild hogs|employee of the month|wedding crashers|what happens in vegas|forgetting sarah marshall|mean girls|blades of glory|step brothers|role models|hot fuzz|run fatboy run|yes man|good luck chuck|funny people|idiocracy|corky romano|borat|date movie|balls of fury|talladega nights|hot tub time machine|the other guys|dinner for schmucks|pineapple express|observe and report|i love you|land of the lost|fun with dick|my big fat greek|super troopers|clerks|hairspray|hamlet 2|sexdrive|my best friends girl|heartbreakers|the proposal|couples retreat|easy a|adventureland|the rocker|the switch|we.re the millers|due date|the hangover|ted$|fired up|she.s out of my league|baseketball|this is the end|horrible bosses|rock of ages|pitch perfect|spaceballs|bad moms|bridesmaids|love actually|wedding singer|your highness|the men who stare|four christmases|christmas vacation|fred claus|christmas with the kranks|office christmas party|^elf$|the holiday|game night|blockers|sisters$|sausage party|mom and dad|jojo rabbit|waiting|for richer or poorer|the family man|very bad things|how to lose a guy|bring it on|daddy.s home|bruce almighty|the bounty hunter|date movie|baseketball|this is the end/.test(x)) return 'Comedy';
+  if (/^chronicles of narnia|dungeons|percy jackson|sorcerer.s apprentice|alice in wonderland|oz the great|hansel and gretel|the brothers grimm|ender.s game|immortals|fantastic beasts|spawn$|brightburn|labyrinth|coraline/.test(x)) return 'Fantasy';
+  if (/^ff7:|family guy|hulk vs|dane cook|bassmaster|teen titans$/.test(x)) return 'Special / Comedy';
+  return 'Other';
+}
+
+const genreOrder = ['Harry Potter','Lord of the Rings / Hobbit','Star Wars','Resident Evil','Alien Franchise','Pirates of the Caribbean','Hunger Games','Vampire & Supernatural','Superhero','Action / Adventure','Sci-Fi','Fantasy','Thriller / Crime','Drama','Comedy','Horror','Horror-Comedy','Pixar','Family / Animation','Illumination / Animation','Spooky Animation','Special / Comedy','Other'];
+
+
+const CUSTOM_KEY = 'familyMovieVaultCustomMovies';
+const manualSection = document.getElementById('manual-movie-section');
+const managerBody = document.getElementById('manager-body');
+const managerStatus = document.getElementById('manager-status');
+const genreSelect = document.getElementById('movie-genre');
+const form = document.getElementById('add-movie-form');
+const SUPABASE_URL = 'https://prgivcziksnywptcuzoh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4emn4Phg_l_iIVWukA67JQ_aeofzxlD';
+const MOVIES_ENDPOINT = `${SUPABASE_URL}/rest/v1/movies`;
+const LOCAL_FALLBACK_KEY = 'familyMovieVaultCloudFallback';
+let cloudMoviesCache = [];
+let cloudLoaded = false;
+
+function readFallbackMovies() {
+  try {
+    const raw = localStorage.getItem(LOCAL_FALLBACK_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFallbackMovies(items) {
+  localStorage.setItem(LOCAL_FALLBACK_KEY, JSON.stringify(items));
+}
+
+function setManagerStatus(message, ok=true) {
+  managerStatus.textContent = message;
+  managerStatus.style.color = ok ? '#9ee29e' : '#ffb3b3';
+}
+
+function supabaseHeaders(extra = {}) {
+  return {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    ...extra,
+  };
+}
+
+async function loadCloudMovies(force=false) {
+  if (cloudLoaded && !force) return cloudMoviesCache;
+  try {
+    const response = await fetch(`${MOVIES_ENDPOINT}?select=id,title,genre,source,page,slot,created_at,favorite,watched,want_to_watch&order=created_at.desc`, {
+      headers: supabaseHeaders()
+    });
+    if (!response.ok) throw new Error(`Load failed: ${response.status}`);
+    const rows = await response.json();
+    cloudMoviesCache = (Array.isArray(rows) ? rows : []).map(row => ({
+      customId: `db_${row.id}`,
+      dbId: row.id,
+      t: row.title || '',
+      genre: row.genre || getGenre(row.title || ''),
+      s: row.source || 'dvd',
+      p: row.page ?? '',
+      i: row.slot ?? '',
+      created_at: row.created_at || null,
+      favorite: !!row.favorite,
+      watched: !!row.watched,
+      want_to_watch: !!row.want_to_watch,
+    }));
+    cloudLoaded = true;
+    return cloudMoviesCache;
+  } catch (error) {
+    console.error(error);
+    cloudMoviesCache = [];
+    cloudLoaded = true;
+    setManagerStatus('Cloud not reachable right now. Check your connection and refresh.', false);
+    return cloudMoviesCache;
+  }
+}
+
+function enhanceMovie(d, isCustom=false) {
+  const title = (d.t || '').trim();
+  const genre = d.genre || getGenre(title);
+  return {
+    ...d,
+    t: title,
+    genre,
+    s: d.s || 'dvd',
+    p: d.p || '',
+    i: d.i || '',
+    favorite: !!d.favorite,
+    watched: !!d.watched,
+    want_to_watch: !!d.want_to_watch,
+    isCustom,
+    customId: d.customId || null,
+    dbId: d.dbId || null,
+    seriesInfo: SERIES[title] || null,
+  };
+}
+
+function allGenresForSelect() {
+  return [...new Set([...genreOrder, ...getCustomMovies().map(d => d.genre || getGenre(d.t))])].filter(Boolean);
+}
+
+function populateGenreSelect() {
+  const current = genreSelect.value;
+  const genres = allGenresForSelect();
+  genreSelect.innerHTML = genres.map(g => `<option value="${g}">${g}</option>`).join('');
+  if (genres.includes(current)) genreSelect.value = current;
+}
+
+function getBaseMovies() {
+  return [];
+}
+
+function getCustomMovies() {
+  return [...cloudMoviesCache].map(d => enhanceMovie(d, false));
+}
+
+function sortMovies(list) {
+  return [...list].sort((a,b) => {
+    let ai = genreOrder.indexOf(a.genre); if(ai<0) ai=99;
+    let bi = genreOrder.indexOf(b.genre); if(bi<0) bi=99;
+    if(ai!==bi) return ai-bi;
+    const as = a.seriesInfo, bs = b.seriesInfo;
+    if(as && bs && as.series === bs.series) {
+      const an = parseFloat(as.num)||0, bn = parseFloat(bs.num)||0;
+      if (an !== bn) return an-bn;
+    }
+    if(as && bs && as.series !== bs.series) {
+      const cmp = as.series.localeCompare(bs.series);
+      if (cmp !== 0) return cmp;
+    }
+    if(as && !bs) return -1;
+    if(!as && bs) return 1;
+    return a.t.localeCompare(b.t);
+  });
+}
+
+function getAllMovies() {
+  return sortMovies(getCustomMovies());
+}
+
+function updateStats(data) {
+  const dvdCount = data.filter(d=>d.s==='dvd').length;
+  const primeCount = data.filter(d=>d.s==='prime').length;
+  document.getElementById('total-count').textContent = data.length;
+  document.getElementById('dvd-count').textContent = dvdCount;
+  document.getElementById('prime-count').textContent = primeCount;
+  document.getElementById('genre-count').textContent = [...new Set(data.map(d=>d.genre))].length;
+  const shuffled = [...data].sort(()=>Math.random()-0.5).slice(0,60);
+  document.getElementById('ticker-text').textContent = shuffled.map(d=>d.t).join(' ★ ') + (shuffled.length ? ' ★ ' : '');
+}
+
+const gf = document.getElementById('genre-filters');
+function renderGenreFilters(data) {
+  const genres = [...new Set(sortMovies(data).map(d=>d.genre))];
+  const previous = activeGenre;
+  gf.innerHTML = '<button class="filter-btn active" data-genre="all">All Genres</button>';
+  genres.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className='filter-btn'; btn.dataset.genre=g; btn.textContent=g;
+    if (g === previous) btn.classList.add('active');
+    gf.appendChild(btn);
+  });
+  if (previous !== 'all' && !genres.includes(previous)) {
+    activeGenre = 'all';
+    gf.querySelector('[data-genre="all"]').classList.add('active');
+  }
+}
+
+function seriesPill(info) {
+  if(!info) return '';
+  return `<span class="series-pill">${info.series} #${info.num}</span>`;
+}
+
+function renderManualList(customItems) {
+  manualSection.innerHTML = `
+    <div class="manual-section">
+      <div class="manual-header">
+        <div>
+          <div class="manual-title">Manage Cloud Movies</div>
+          <div class="manager-sub">Showing your most recently added shared cloud movies.</div>
+        </div>
+      </div>
+      ${customItems.length ? `<div class="manual-list">${customItems.slice(0, 50).map(item => `
+        <div class="manual-item">
+          <div class="manual-item-main">
+            <div class="manual-item-title">${item.t}</div>
+            <div class="manual-item-meta">${item.genre} • ${item.s === 'prime' ? 'Prime / Digital' : `DVD • Page ${item.p || '?'} • Slot ${item.i || '?'}`}</div>
+          </div>
+          <button class="delete-btn" data-delete-id="${item.customId}">Delete</button>
+        </div>`).join('')}</div>` : `<div class="empty-note">No manually added movies yet.</div>`}
+    </div>`;
+}
+
+
+function statusButtons(d) {
+  return `<div class="status-stack">
+    <button class="status-btn favorite ${d.favorite ? 'active' : ''}" data-status-action="favorite" data-id="${d.dbId || ''}" title="Favorite">★ Fav</button>
+    <button class="status-btn watched ${d.watched ? 'active' : ''}" data-status-action="watched" data-id="${d.dbId || ''}" title="Watched">👁 Watched</button>
+    <button class="status-btn want ${d.want_to_watch ? 'active' : ''}" data-status-action="want_to_watch" data-id="${d.dbId || ''}" title="Want to Watch">📌 Want</button>
+  </div>`;
+}
+
+async function toggleMovieStatus(id, field) {
+  const movie = cloudMoviesCache.find(m => String(m.dbId) === String(id));
+  if (!movie) return;
+  const next = !movie[field];
+  try {
+    const response = await fetch(`${MOVIES_ENDPOINT}?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: supabaseHeaders({
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      }),
+      body: JSON.stringify({ [field]: next }),
+    });
+    if (!response.ok) throw new Error(`Update failed: ${response.status}`);
+    movie[field] = next;
+    setManagerStatus(`${movie.t}: ${field.replaceAll('_',' ')} ${next ? 'enabled' : 'cleared'}.`);
+    applyFilters();
+  } catch (error) {
+    console.error(error);
+    setManagerStatus('Could not update movie status right now.', false);
+  }
+}
+
+function render(data, q='') {
+  const main = document.getElementById('main-content');
+  const noRes = document.getElementById('no-results');
+  main.innerHTML = '';
+  const ql = q.toLowerCase();
+  const filtered = data.filter(d => {
+    if(!ql) return true;
+    if(d.t.toLowerCase().includes(ql)) return true;
+    if(d.genre.toLowerCase().includes(ql)) return true;
+    if(d.seriesInfo && d.seriesInfo.series.toLowerCase().includes(ql)) return true;
+    return false;
+  });
+  if(!filtered.length){noRes.style.display='block';return;}
+  noRes.style.display='none';
+  const byGenre = {};
+  filtered.forEach(d=>{if(!byGenre[d.genre])byGenre[d.genre]=[];byGenre[d.genre].push(d);});
+  const keys = [...new Set(sortMovies(data).map(d=>d.genre))].filter(g=>byGenre[g]);
+  keys.forEach(genre => {
+    const items = byGenre[genre];
+    const sec = document.createElement('div');
+    sec.className = 'genre-section';
+    sec.innerHTML = `
+      <div class="genre-header">
+        <div class="genre-tag">${genre}</div>
+        <div class="genre-count">${items.length} title${items.length!==1?'s':''}</div>
+      </div>
+      <table class="dvd-table">
+        <thead><tr><th>Title</th><th>Source</th><th class="center">Location</th><th class="center">Status</th></tr></thead>
+        <tbody>${items.map(d=>{
+          const isPrime = d.s==='prime';
+          return `<tr class="${isPrime?'prime-row':''}">
+            <td class="title-cell">${d.t}${seriesPill(d.seriesInfo)}</td>
+            <td>${isPrime
+              ? '<span class="source-badge badge-prime">▶ Prime</span>'
+              : '<span class="source-badge badge-dvd">📀 DVD</span>'
+            }</td>
+            <td class="location-cell">${isPrime
+              ? '<span class="prime-location">Digital</span>'
+              : `<div style="display:inline-flex;gap:4px"><span class="page-num">Pg ${d.p || '?'}</span><span class="insert-num">${d.i || '?'}</span></div>`
+            }</td>
+            <td class="location-cell">${statusButtons(d)}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+    main.appendChild(sec);
+  });
+}
+
+let activeGenre='all', activeSource='all', searchVal='';
+function applyFilters(){
+  const allMovies = getAllMovies();
+  updateStats(allMovies);
+  renderGenreFilters(allMovies);
+  renderManualList(getCustomMovies());
+  populateGenreSelect();
+  let data = allMovies;
+  if(activeSource!=='all') data=data.filter(d=>d.s===activeSource);
+  if(activeGenre!=='all') data=data.filter(d=>d.genre===activeGenre);
+  render(data, searchVal);
+}
+
+document.querySelector('.source-toggle').addEventListener('click', e=>{
+  if(!e.target.dataset.source) return;
+  document.querySelectorAll('.source-toggle .filter-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  activeSource=e.target.dataset.source;
+  applyFilters();
+});
+gf.addEventListener('click', e=>{
+  if(!e.target.dataset.genre) return;
+  document.querySelectorAll('#genre-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  activeGenre=e.target.dataset.genre;
+  applyFilters();
+});
+document.getElementById('search').addEventListener('input', e=>{searchVal=e.target.value;applyFilters();});
+
+document.getElementById('main-content').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-status-action]');
+  if (!btn) return;
+  await toggleMovieStatus(btn.dataset.id, btn.dataset.statusAction);
+});
+
+document.getElementById('toggle-manager').addEventListener('click', () => {
+  managerBody.classList.toggle('hidden');
+});
+
+document.getElementById('movie-source').addEventListener('change', (e) => {
+  const dvdFields = [document.getElementById('movie-page'), document.getElementById('movie-slot')];
+  const isPrime = e.target.value === 'prime';
+  dvdFields.forEach(el => {
+    el.disabled = isPrime;
+    if (isPrime) el.value = '';
+  });
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(form);
+  const title = (fd.get('title') || '').toString().trim();
+  if (!title) return;
+  const source = (fd.get('source') || 'dvd').toString();
+  const genre = (fd.get('genre') || getGenre(title)).toString();
+  const page = (fd.get('page') || '').toString().trim();
+  const slot = (fd.get('slot') || '').toString().trim().toUpperCase();
+  if (source === 'dvd' && (!page || !slot)) {
+    setManagerStatus('For DVDs, add both a page and slot.', false);
+    return;
+  }
+
+  const payload = {
+    title,
+    genre,
+    source,
+    page: source === 'dvd' ? Number(page) : null,
+    slot: source === 'dvd' ? slot : null,
+    favorite: false,
+    watched: false,
+    want_to_watch: false,
+  };
+
+  try {
+    const response = await fetch(MOVIES_ENDPOINT, {
+      method: 'POST',
+      headers: supabaseHeaders({
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      }),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error(`Insert failed: ${response.status}`);
+    await loadCloudMovies(true);
+    setManagerStatus(`Saved "${title}" to the shared family cloud.`);
+  } catch (error) {
+    console.error(error);
+    setManagerStatus(`Cloud save failed for "${title}". Please try again.`, false);
+  }
+
+  form.reset();
+  document.getElementById('movie-source').value = 'dvd';
+  document.getElementById('movie-source').dispatchEvent(new Event('change'));
+  applyFilters();
+});
+
+manualSection.addEventListener('click', async (e) => {
+  const id = e.target.dataset.deleteId;
+  if (!id) return;
+  if (id.startsWith('db_')) {
+    const dbId = id.replace('db_', '');
+    try {
+      const response = await fetch(`${MOVIES_ENDPOINT}?id=eq.${dbId}`, {
+        method: 'DELETE',
+        headers: supabaseHeaders({ Prefer: 'return=minimal' }),
+      });
+      if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
+      await loadCloudMovies(true);
+      setManagerStatus('Movie removed from the shared family cloud.');
+    } catch (error) {
+      console.error(error);
+      setManagerStatus('Could not delete this cloud movie right now.', false);
+    }
+  }
+  applyFilters();
+});
+
+document.getElementById('export-movies').addEventListener('click', () => {
+  const items = cloudMoviesCache.map(item => ({
+    id: item.dbId || null,
+    customId: item.customId || null,
+    title: item.t,
+    genre: item.genre,
+    source: item.s,
+    page: item.p || null,
+    slot: item.i || null,
+    created_at: item.created_at || null,
+  }));
+  const blob = new Blob([JSON.stringify(items, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'family-movie-vault-cloud-movies.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  setManagerStatus('Exported your shared cloud movies file.');
+});
+
+populateGenreSelect();
+applyFilters();
+document.getElementById('movie-source').dispatchEvent(new Event('change'));
+loadCloudMovies().then((movies) => {
+  applyFilters();
+  if (Array.isArray(movies) && movies.length) {
+    setManagerStatus(`Loaded ${movies.length} movies from your shared cloud.`);
+  } else {
+    setManagerStatus('No cloud movies found yet. Add one or import your library.', false);
+  }
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+
+</script>
+</body>
+</html>
