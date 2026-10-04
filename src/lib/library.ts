@@ -77,6 +77,7 @@ export function normalizeItem(raw: unknown, now: string = new Date().toISOString
   const targetPrice = num(r.targetPrice)
   const currentValue = num(r.currentValue)
   const valueAt = str(r.valueAt)
+  const tmdbAt = str(r.tmdbAt)
   const rating = Math.min(5, Math.max(0, Math.round(num(r.rating) ?? 0)))
   const purchasedAt = str(r.purchasedAt)
   const lentAt = str(r.lentAt)
@@ -101,6 +102,10 @@ export function normalizeItem(raw: unknown, now: string = new Date().toISOString
   if (targetPrice !== undefined && targetPrice >= 0) item.targetPrice = targetPrice
   if (currentValue !== undefined && currentValue >= 0) item.currentValue = currentValue
   if (valueAt && isDay(valueAt)) item.valueAt = valueAt
+  if (tmdbAt && isDay(tmdbAt)) item.tmdbAt = tmdbAt
+  if (Array.isArray(r.autoTags)) item.autoTags = normalizeTags(r.autoTags)
+  const removed = normalizeTags(r.removedTags)
+  if (removed.length) item.removedTags = removed
   const priority = typeof r.priority === 'string' ? (r.priority.trim().toLowerCase() as Priority) : undefined
   if (priority === 'high' || priority === 'medium' || priority === 'low') item.priority = priority
   if (purchasedAt && isDay(purchasedAt)) item.purchasedAt = purchasedAt
@@ -191,6 +196,16 @@ export function mergeLibraries(existing: Item[], incoming: Item[]): ImportPlan {
     if (have) {
       const next: Item = { ...have, tags: [...new Set([...have.tags, ...inc.tags])], ext: { ...inc.ext, ...have.ext } }
       let changed = next.tags.length !== have.tags.length || Object.keys(next.ext).length !== Object.keys(have.ext).length
+      // suggestions and dismissals are combined too (a dismissal from either side sticks)
+      for (const key of ['autoTags', 'removedTags'] as const) {
+        if (have[key] === undefined && inc[key] === undefined) continue
+        const union = [...new Set([...(have[key] ?? []), ...(inc[key] ?? [])])]
+        if (union.length !== (have[key]?.length ?? -1)) {
+          next[key] = union
+          changed = true
+        }
+      }
+      if (next.removedTags?.length && next.autoTags) next.autoTags = next.autoTags.filter((t) => !next.removedTags!.includes(t))
       for (const f of FILL_FIELDS) {
         if (have[f] === undefined && inc[f] !== undefined) {
           ;(next as unknown as Record<string, unknown>)[f] = inc[f]

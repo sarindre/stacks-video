@@ -1,4 +1,5 @@
 import { CATEGORY_ORDER, formatLabel } from './catalog'
+import { allTags } from './tags'
 import type { Category, Item } from './types'
 
 export interface Count {
@@ -27,6 +28,7 @@ export interface Stats {
   byFormat: Count[]
   byGenre: Count[]
   byLocation: Count[]
+  byTag: Count[]
   /** Last 12 calendar months ending now, oldest first. */
   addedByMonth: { key: string; label: string; count: number }[]
   recent: Item[]
@@ -98,6 +100,7 @@ export function computeStats(items: Item[], now: Date = new Date()): Stats {
     byFormat: tally(owned.map((i) => formatLabel(i.category, i.format)), 10),
     byGenre: tally(owned.filter((i) => i.genre).map((i) => i.genre!), 8),
     byLocation: tally(owned.filter((i) => i.location).map((i) => i.location!), 8),
+    byTag: tally(owned.flatMap((i) => allTags(i).filter((t) => t !== 'sample')), 12),
     addedByMonth: months,
     recent: [...owned].sort((a, b) => b.addedAt.localeCompare(a.addedAt)).slice(0, 6),
     lent: owned.filter((i) => i.lentTo),

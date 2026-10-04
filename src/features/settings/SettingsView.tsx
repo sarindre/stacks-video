@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
-import { ClipboardPaste, Download, FileUp, FolderSync, ImageDown, Printer, Trash2 } from 'lucide-react'
+import { ClipboardPaste, Download, FileUp, FolderSync, ImageDown, Printer, RefreshCw, Trash2 } from 'lucide-react'
 import { csvToItems, itemsToCsv } from '../../lib/csv'
 import { dayKey, formatDay } from '../../lib/dates'
 import { THEME_PREFS } from '../../lib/theme'
@@ -9,6 +9,8 @@ import { buildExport, validateImport, type ImportPlan } from '../../lib/library'
 import type { Item } from '../../lib/types'
 import { useLibrary } from '../../hooks/useLibrary'
 import { ScreenHelp } from '../../components/ScreenHelp'
+import { TmdbCredit } from '../../components/Attribution'
+import { refreshTargets, refreshTmdb, removeArtworkPatches, removeSuggestionPatches, staleItems, suggestedTagItems, tmdbArtworkItems, TMDB_MAX_AGE_DAYS, type RefreshProgress } from '../../lib/refresh'
 import { PrintDialog } from '../print/PrintDialog'
 import { AboutSection } from './About'
 import { ExportTextDialog, PasteImportDialog } from './BackupTextDialogs'
@@ -41,6 +43,13 @@ export function SettingsView() {
   const [progress, setProgress] = useState<EnrichProgress | null>(null)
   const [coverReport, setCoverReport] = useState<{ text: string; unmatched: string[]; ok: boolean } | null>(null)
   const abort = useRef<AbortController | null>(null)
+  const [refreshProgress, setRefreshProgress] = useState<RefreshProgress | null>(null)
+  const [refreshReport, setRefreshReport] = useState<{ text: string; ok: boolean } | null>(null)
+  const refreshAbort = useRef<AbortController | null>(null)
+  const stale = staleItems(items)
+  const targets = refreshTargets(items) // the stale ones plus the ones that have never had tags suggested
+  const artwork = tmdbArtworkItems(items)
+  const suggested = suggestedTagItems(items)
   const keys = keysOf(settings)
   const missing = items.filter((i) => needsCover(i, keys)).length
 
@@ -57,6 +66,24 @@ export function SettingsView() {
       ? `Stopped early: TMDB did not answer (check your token and connection). ${out.matched} matched before that.`
       : `${out.cancelled ? 'Cancelled. ' : ''}Matched ${out.matched}; ${out.unmatched.length} could not be matched with confidence.`
     setCoverReport({ text, unmatched: out.unmatched, ok: !out.failed })
+  }
+
+  const refreshDetails = async () => {
+    const ctl = new AbortController()
+    refreshAbort.current = ctl
+    setRefreshReport(null)
+    setRefreshProgress({ done: 0, total: targets.length })
+    const out = await refreshTmdb(items, keys, { signal: ctl.signal, onProgress: setRefreshProgress })
+    const n = Object.keys(out.patches).length
+    updateMany(out.patches, `Refreshed details and suggested tags for ${n} item${n === 1 ? '' : 's'}`)
+    setRefreshProgress(null)
+    refreshAbort.current = null
+    setRefreshReport({
+      ok: !out.failed,
+      text: out.failed
+        ? `Stopped early: TMDB did not answer (check your token and connection). ${n} refreshed before that.`
+        : `${out.cancelled ? 'Cancelled. ' : ''}Refreshed ${out.refreshed}${out.gone ? `; ${out.gone} no longer listed by TMDB, so their artwork link was removed` : ''}.`,
+    })
   }
 
   // Turns the text of a backup or CSV into a preview. Shared by file choosing and pasting.
@@ -189,7 +216,8 @@ export function SettingsView() {
         <Field label="TMDB Read Access Token">
           <input type="password" autoComplete="off" spellCheck={false} value={settings.tmdbToken} onChange={(e) => updateSettings({ tmdbToken: e.target.value.trim() })} placeholder="eyJhbGciOi…" />
         </Field>
-        <p className="text-xs text-mute">This product uses the TMDB API but is not endorsed or certified by TMDB. Barcode lookups for discs use UPCitemdb's free tier.</p>
+        <TmdbCredit />
+        <p className="text-xs text-mute">Barcode lookups for discs use UPCitemdb's free tier.</p>
       </Section>
 
       <Section title="Game lookup" id="games">
@@ -237,6 +265,57 @@ export function SettingsView() {
               </details>
             )}
           </div>
+        )}
+      </Section>
+
+      <Section title="TMDB details, suggested tags and the six-month rule" id="tmdb-data">
+        <p className="text-sm text-mute">
+          TMDB's terms don't allow keeping its content for more than six months, so Stacks Video keeps very little: an id, a year, a genre label and a link to each poster, never descriptions or image files. Pictures saved for offline use expire after about five months, as do remembered franchise results. Refreshing re-checks the poster link from each item's id, and suggests tags from TMDB's genres and keywords (shown with a ✦ and kept apart from your own). It <b>never changes anything you typed</b>.
+        </p>
+        <p className="text-sm">
+          {targets.length > 0
+            ? `${targets.length} item${targets.length === 1 ? ' is' : 's are'} due: ${stale.length} with TMDB details older than ${Math.round(TMDB_MAX_AGE_DAYS / 30)} months (or undated), and ${targets.length - stale.length} that have not had tags suggested yet.`
+            : 'All TMDB details are up to date and tagged.'}
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          {refreshProgress ? (
+            <>
+              <span role="status" className="text-sm">
+                Refreshing {refreshProgress.done} of {refreshProgress.total}…
+              </span>
+              <button className={btnSecondary} onClick={() => refreshAbort.current?.abort()}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button className={btnSecondary} onClick={() => void refreshDetails()} disabled={!settings.tmdbToken || targets.length === 0}>
+              <RefreshCw size={16} /> Refresh details and suggest tags ({targets.length})
+            </button>
+          )}
+          <button
+            className={btnSecondary}
+            disabled={artwork.length === 0}
+            onClick={() => updateMany(removeArtworkPatches(items), `Removed ${artwork.length} TMDB artwork link${artwork.length === 1 ? '' : 's'}`)}
+            title="Removes the poster links to TMDB's image servers. Your items stay; Rewind brings the links back."
+          >
+            Remove TMDB artwork links ({artwork.length})
+          </button>
+        </div>
+        <div>
+          <button
+            className={btnSecondary}
+            disabled={suggested.length === 0}
+            onClick={() => updateMany(removeSuggestionPatches(items), `Removed suggested tags from ${suggested.length} item${suggested.length === 1 ? '' : 's'}`)}
+            title="Removes the ✦ suggested tags. Your own tags stay; Rewind brings the suggestions back."
+          >
+            Remove suggested tags ({suggested.length})
+          </button>
+        </div>
+        {!settings.tmdbToken && targets.length > 0 && <p className="text-sm text-accent">Add your TMDB token above to refresh and suggest tags.</p>}
+        {refreshReport && (
+          <p role="status" className={`text-sm ${refreshReport.ok ? 'text-good' : 'text-bad'}`}>
+            {refreshReport.text}
+          </p>
         )}
       </Section>
 

@@ -7,6 +7,7 @@ import { useLibrary } from '../../hooks/useLibrary'
 import type { Item } from '../../lib/types'
 import { btnDanger, btnPrimary, btnSecondary, Cover, Dialog } from '../../components/ui'
 import { ItemForm } from './ItemForm'
+import { hasDetails, TitleDetails } from './TitleDetails'
 
 export function ItemDialog({ item, onClose }: { item: Item | null; onClose: () => void }) {
   return (
@@ -46,6 +47,15 @@ function Editor({ item, onClose }: { item: Item; onClose: () => void }) {
           <Cover url={item.posterUrl} title={item.title} category={item.category} />
         </div>
         <div className="grid gap-4">
+          {hasDetails(item) && (
+            <TitleDetails
+              item={draft}
+              onFix={(category, id) =>
+                // Point at the right TMDB page. Typed fields and the cover are untouched; suggested tags are re-worked from the new page.
+                setDraft({ ...draft, category, ext: { ...draft.ext, tmdb: id }, tmdbAt: dayKey(), autoTags: undefined })
+              }
+            />
+          )}
           <ItemForm draft={draft} onChange={setDraft} items={items} isNew={false} />
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
             {draft.status === 'wishlist' && (

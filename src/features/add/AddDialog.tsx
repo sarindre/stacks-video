@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Barcode, Loader2, PencilLine, Search } from 'lucide-react'
 import { CATEGORIES, CATEGORY_ORDER, defaultFormat, formatLabel } from '../../lib/catalog'
+import { dayKey } from '../../lib/dates'
 import { blankItem } from '../../lib/library'
 import { canSearch, lookupBarcode, LookupError, search, type LookupResult } from '../../lib/lookup'
+import { inferTags } from '../../lib/autotags'
+import { getTmdbDetails } from '../../lib/lookup/tmdb'
 import { keysOf } from '../../lib/settings'
 import { readJSON, writeJSON } from '../../lib/storage'
 import type { Category, Item, Status } from '../../lib/types'
@@ -101,6 +104,19 @@ function AddFlow({ status, onDone, prefill, initialQuery, initialCategory }: { s
     }
   }
 
+  // Chosen from TMDB: fetch its keywords (one request) and fill in suggested tags when they arrive.
+  const suggestFor = (r: LookupResult) => {
+    const category = r.category
+    if (r.ext.tmdb === undefined || (category !== 'movie' && category !== 'tv') || !settings.tmdbToken) return
+    const id = r.ext.tmdb
+    getTmdbDetails(settings.tmdbToken, category, id)
+      .then((d) => {
+        if (!d) return
+        setDraft((cur) => (cur && cur.ext.tmdb === id ? { ...cur, autoTags: inferTags({ genres: d.genres, keywords: d.keywords }, { primaryGenre: cur.genre, dismissed: cur.removedTags, own: cur.tags }) } : cur))
+      })
+      .catch(() => undefined) // suggestions are a bonus; a failed lookup just means none
+  }
+
   const startDraft = (r?: LookupResult, typedTitle = '') => {
     const base = blankItem(r?.category ?? category)
     // A game exists on several platforms: prefer the one used last if it is among them, else the first.
@@ -117,10 +133,12 @@ function AddFlow({ status, onDone, prefill, initialQuery, initialCategory }: { s
       posterUrl: r?.posterUrl,
       barcode: r?.barcode ?? (looksLikeBarcode(typedTitle) ? typedTitle : undefined),
       ext: r?.ext ?? {},
+      tmdbAt: r?.ext.tmdb !== undefined ? dayKey() : undefined,
       format: formatPref in CATEGORIES[base.category].formats ? formatPref : defaultFormat(base.category),
       location: status === 'owned' ? defaults.location : undefined,
       ...(prefill && status === 'owned' ? (typeof prefill === 'function' ? prefill(items) : prefill) : {}),
     })
+    if (r) suggestFor(r)
   }
 
   const save = (another: boolean) => {

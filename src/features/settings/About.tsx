@@ -1,4 +1,4 @@
-import { APP_NAME, APP_VERSION, CREDITS, ISSUES_URL, NOTICES_URL, PRIVACY_URL, REPO_URL, TAGLINE } from '../../lib/about'
+import { APP_NAME, APP_VERSION, CREDITS, ISSUES_URL, LICENSE_URL, NOTICES_URL, PRIVACY_URL, REPO_URL, TAGLINE } from '../../lib/about'
 import { TmdbCredit } from '../../components/Attribution'
 import { desktopPlatform, isDesktopApp, platformName } from '../../lib/desktop'
 
@@ -49,6 +49,14 @@ export function AboutSection() {
           .
         </p>
       </div>
+
+      <p className="text-sm text-mute">
+        Free and open source under the{' '}
+        <a href={LICENSE_URL} target="_blank" rel="noopener noreferrer" className={link}>
+          MIT License
+        </a>
+        . The code and the app's own artwork are yours to use and change; the data, logos and fonts credited above keep their own terms.
+      </p>
 
       <p className="text-sm text-mute">
         <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={link}>

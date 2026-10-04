@@ -1,4 +1,6 @@
+import { dayKey } from './dates'
 import { searchRawg } from './lookup/rawg'
+import { isTmdbImage } from './refresh'
 import { searchTmdb } from './lookup/tmdb'
 import type { Fetcher, LookupKeys, LookupResult } from './lookup/types'
 import { normTitle, STOP, words } from './text'
@@ -38,13 +40,15 @@ export function pickBestMatch(term: { query: string; year?: number }, results: L
 }
 
 /** What a match is allowed to change: only gaps, never anything you entered. */
-export function patchFromMatch(item: Item, match: LookupResult): Partial<Item> | null {
+export function patchFromMatch(item: Item, match: LookupResult, today: string = dayKey()): Partial<Item> | null {
   const patch: Partial<Item> = {}
   if (!item.posterUrl && match.posterUrl) patch.posterUrl = match.posterUrl
   if (item.year === undefined && match.year !== undefined) patch.year = match.year
   if (!item.genre && match.genre) patch.genre = match.genre
   if (match.ext.tmdb !== undefined && item.ext.tmdb === undefined) patch.ext = { ...item.ext, tmdb: match.ext.tmdb }
   if (match.ext.rawg !== undefined && item.ext.rawg === undefined) patch.ext = { ...item.ext, ...patch.ext, rawg: match.ext.rawg }
+  // Anything taken from TMDB is dated, so it can be refreshed before it gets old (see lib/refresh.ts).
+  if (Object.keys(patch).length && (match.ext.tmdb !== undefined || isTmdbImage(patch.posterUrl))) patch.tmdbAt = today
   return Object.keys(patch).length ? patch : null
 }
 

@@ -47,6 +47,22 @@ describe('sorting', () => {
   })
 })
 
+describe('tags (yours and suggested)', () => {
+  const tagged = [
+    make({ title: 'Mine', tags: ['heist'] }),
+    make({ title: 'Suggested', autoTags: ['heist', 'spy'] }),
+    make({ title: 'Neither' }),
+  ]
+  it('finds both kinds by search', () => {
+    expect(titles(filterItems(tagged, 'owned', { ...DEFAULT_FILTERS, q: 'heist' })).sort()).toEqual(['Mine', 'Suggested'])
+    expect(titles(filterItems(tagged, 'owned', { ...DEFAULT_FILTERS, q: 'spy' }))).toEqual(['Suggested'])
+  })
+  it('filters by a tag of either kind', () => {
+    expect(titles(filterItems(tagged, 'owned', { ...DEFAULT_FILTERS, tag: 'heist' })).sort()).toEqual(['Mine', 'Suggested'])
+    expect(titles(filterItems(tagged, 'owned', { ...DEFAULT_FILTERS, tag: 'nope' }))).toEqual([])
+  })
+})
+
 describe('wishlist and value sorting', () => {
   const wish = [
     make({ title: 'Low', status: 'wishlist', priority: 'low' }),

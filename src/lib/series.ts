@@ -153,7 +153,20 @@ const CACHE_KEY = 'shelfkeeper.series.v1'
 const IGNORED_KEY = 'shelfkeeper.seriesIgnored.v1'
 export const CACHE_DAYS = 30
 
-export const loadSeriesCache = () => readJSON<Record<string, CachedSeries>>(CACHE_KEY, {})
+/** Stored franchise results are dropped after this long (TMDB's terms: nothing cached beyond six months). */
+export const CACHE_PURGE_DAYS = 150
+
+/** The remembered results, minus any that have passed the time limit (which are also erased from storage). */
+export function loadSeriesCache(now: Date = new Date()): Record<string, CachedSeries> {
+  const all = readJSON<Record<string, CachedSeries>>(CACHE_KEY, {})
+  const kept: Record<string, CachedSeries> = {}
+  for (const [name, c] of Object.entries(all)) {
+    const age = (now.getTime() - new Date(c?.fetchedAt).getTime()) / 86_400_000
+    if (Number.isFinite(age) && age <= CACHE_PURGE_DAYS) kept[name] = c
+  }
+  if (Object.keys(kept).length !== Object.keys(all).length) writeJSON(CACHE_KEY, kept)
+  return kept
+}
 export const saveSeriesCache = (c: Record<string, CachedSeries>) => writeJSON(CACHE_KEY, c)
 export const loadIgnored = () => new Set(readJSON<number[]>(IGNORED_KEY, []))
 export const saveIgnored = (s: ReadonlySet<number>) => writeJSON(IGNORED_KEY, [...s])
@@ -168,7 +181,7 @@ export function usualFormat(group: SeriesGroup): string {
 }
 
 /** A wishlist item for a missing entry. */
-export function wishlistItemFor(entry: SeriesEntry, seriesName: string, format: string, base: Pick<Item, 'id' | 'addedAt' | 'updatedAt'>): Item {
+export function wishlistItemFor(entry: SeriesEntry, seriesName: string, format: string, base: Pick<Item, 'id' | 'addedAt' | 'updatedAt'> & { tmdbAt?: string }): Item {
   const { part } = entry
   return {
     ...base,
@@ -186,5 +199,6 @@ export function wishlistItemFor(entry: SeriesEntry, seriesName: string, format: 
     tags: [],
     posterUrl: part.posterUrl,
     ext: { tmdb: part.tmdb },
+    tmdbAt: base.tmdbAt ?? new Date().toISOString().slice(0, 10),
   }
 }

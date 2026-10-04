@@ -2,6 +2,7 @@ import { useDeferredValue, useMemo, useState } from 'react'
 import { CheckSquare, Layers, Sparkles, LayoutGrid, List, Plus, Search, SlidersHorizontal, Upload } from 'lucide-react'
 import { CATEGORIES, CATEGORY_ORDER, formatLabel } from '../../lib/catalog'
 import { price } from '../../lib/format'
+import { allTags } from '../../lib/tags'
 import { sampleItems } from '../../lib/sampleData'
 import { DEFAULT_FILTERS, distinct, filterItems, sortAndGroup, type Filters, type GroupKey, type SortKey } from '../../lib/filters'
 import type { Item, Status } from '../../lib/types'
@@ -53,6 +54,7 @@ export function LibraryView({ status, onOpen, onAdd, onImport }: Props) {
   }, [here, filters.category])
   const genres = useMemo(() => distinct(here, (i) => i.genre), [here])
   const locations = useMemo(() => distinct(here, (i) => i.location), [here])
+  const tagList = useMemo(() => [...new Set(here.flatMap(allTags))].sort((a, b) => a.localeCompare(b)), [here])
   const counts = useMemo(() => {
     const m = new Map<string, number>()
     for (const i of here) m.set(i.category, (m.get(i.category) ?? 0) + 1)
@@ -154,6 +156,7 @@ export function LibraryView({ status, onOpen, onAdd, onImport }: Props) {
           <Select label="Format" value={filters.format} onChange={(v) => set({ format: v })} options={formats} />
           <Select label="Genre" value={filters.genre} onChange={(v) => set({ genre: v })} options={genres.map((g) => [g, g])} />
           <Select label="Location" value={filters.location} onChange={(v) => set({ location: v })} options={locations.map((g) => [g, g])} />
+          <Select label="Tag" value={filters.tag} onChange={(v) => set({ tag: v })} options={tagList.map((g) => [g, g])} />
           <Select
             label="Show"
             value={filters.flag}

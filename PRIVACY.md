@@ -14,7 +14,7 @@ Stacks Video contacts these services only when a feature needs them, using your 
 
 | Service | What is sent | Why |
 | --- | --- | --- |
-| **TMDB** (api.themoviedb.org, image.tmdb.org) | Titles you search for and your TMDB token. Poster images are requested from their image servers | Movie and TV details, posters, franchises (Series gaps) |
+| **TMDB** (api.themoviedb.org, image.tmdb.org) | Titles you search for, TMDB ids of items in your collection (to refresh them and suggest tags), and your TMDB token. Poster images are requested from their image servers | Movie and TV details, posters, franchises (Series gaps), suggested tags, and the synopsis and cast shown on request (not saved) |
 | **RAWG** (api.rawg.io) | Titles you search for and your RAWG key | Game details |
 | **Open Library** (openlibrary.org, covers.openlibrary.org) | Titles, authors or ISBNs you search for | Book details and covers |
 | **MusicBrainz** (musicbrainz.org) and **Cover Art Archive** (coverartarchive.org) | Titles, artists or barcodes you search for | Music details and covers |
@@ -28,7 +28,7 @@ The desktop app grants its pages only three permissions: copying to the clipboar
 Camera access, if you use barcode scanning, is used only to read the barcode on your device. Nothing from the camera is recorded or sent anywhere.
 
 ## Things kept to make the app work offline
-To work without internet, the app keeps its own files and some cover images you have viewed on your device. Clearing the site's data in your browser erases all of it, together with your collection. In the desktop app, deleting its data folder does the same.
+To work without internet, the app keeps its own files and some cover images you have viewed on your device. Cover images and remembered franchise results are deleted automatically after about five months (TMDB does not allow its content to be kept longer than six), and Settings can refresh or remove the poster links stored with your items. Clearing the site's data in your browser erases all of it, together with your collection. In the desktop app, deleting its data folder does the same.
 
 ## Your control
 - **Export** gives you your data in a file (or as text) at any time. **Import** brings it back.

@@ -128,3 +128,126 @@ export async function getMovieCollection(token: string, movieId: number, fetcher
   needToken(token)
   return parseMovieCollection(await getJson(fetcher, `${API}/movie/${movieId}?language=en-US`, auth(token)))
 }
+
+// ---- Details by id (used to refresh stored details before they get old) --------------------
+
+export interface TmdbDetails {
+  posterUrl?: string
+  year?: number
+  /** Genre labels in TMDB's order, in our own wording ("Sci-Fi"). */
+  genres: string[]
+  /** Keyword names, used only to work out suggested tags; never stored. */
+  keywords: string[]
+}
+
+export function parseDetails(json: unknown, category: 'movie' | 'tv'): TmdbDetails {
+  const j = (json ?? {}) as {
+    poster_path?: string | null
+    release_date?: string
+    first_air_date?: string
+    genres?: { id?: number; name?: string }[]
+    // movies nest keywords as { keywords: [...] }, TV as { results: [...] }
+    keywords?: { keywords?: { name?: string }[]; results?: { name?: string }[] }
+  }
+  const kw = (category === 'movie' ? j.keywords?.keywords : j.keywords?.results) ?? []
+  return {
+    posterUrl: j.poster_path ? `${IMG}${j.poster_path}` : undefined,
+    year: yearOf(category === 'movie' ? j.release_date : j.first_air_date),
+    genres: (j.genres ?? []).flatMap((g) => {
+      const label = (g.id !== undefined ? GENRES[g.id] : undefined) ?? g.name
+      return label ? [label] : []
+    }),
+    keywords: kw.flatMap((k) => (k.name ? [k.name] : [])),
+  }
+}
+
+/** The current poster link, year, genres and keywords for a TMDB id (one request), or null when TMDB no longer lists it (404). */
+export async function getTmdbDetails(token: string, category: 'movie' | 'tv', id: number, fetcher: Fetcher = fetch): Promise<TmdbDetails | null> {
+  needToken(token)
+  try {
+    return parseDetails(await getJson(fetcher, `${API}/${category}/${id}?language=en-US&append_to_response=keywords`, auth(token)), category)
+  } catch (e) {
+    if (e instanceof LookupError && e.status === 404) return null
+    throw e
+  }
+}
+
+// ---- The "about this title" page: synopsis and cast, fetched when opened, never stored -------
+
+export interface CastMember {
+  name: string
+  character?: string
+  photoUrl?: string
+}
+
+export interface TmdbInfo {
+  title?: string
+  year?: number
+  overview?: string
+  tagline?: string
+  runtime?: number
+  seasons?: number
+  /** Directors for a film, creators for a series. */
+  directors: string[]
+  cast: CastMember[]
+  /** The title's own page on themoviedb.org. */
+  pageUrl: string
+}
+
+const PROFILE = 'https://image.tmdb.org/t/p/w185'
+export const MAX_CAST = 12
+
+export function parseInfo(json: unknown, category: 'movie' | 'tv', id: number): TmdbInfo {
+  const j = (json ?? {}) as {
+    title?: string
+    name?: string
+    release_date?: string
+    first_air_date?: string
+    overview?: string
+    tagline?: string
+    runtime?: number
+    episode_run_time?: number[]
+    number_of_seasons?: number
+    created_by?: { name?: string }[]
+    credits?: { cast?: { name?: string; character?: string; profile_path?: string | null }[]; crew?: { name?: string; job?: string }[] }
+  }
+  const names = (rows: { name?: string }[]) => [...new Set(rows.flatMap((r) => (r.name ? [r.name] : [])))]
+  const directors = category === 'movie' ? names((j.credits?.crew ?? []).filter((c) => c.job === 'Director')) : names(j.created_by ?? [])
+  const runtime = category === 'movie' ? j.runtime : j.episode_run_time?.[0]
+  return {
+    title: (j.title ?? j.name)?.trim() || undefined,
+    year: yearOf(category === 'movie' ? j.release_date : j.first_air_date),
+    overview: j.overview?.trim() || undefined,
+    tagline: j.tagline?.trim() || undefined,
+    runtime: runtime && runtime > 0 ? runtime : undefined,
+    seasons: category === 'tv' && j.number_of_seasons ? j.number_of_seasons : undefined,
+    directors,
+    cast: (j.credits?.cast ?? []).slice(0, MAX_CAST).flatMap((c) =>
+      c.name ? [{ name: c.name, character: c.character?.trim() || undefined, photoUrl: c.profile_path ? `${PROFILE}${c.profile_path}` : undefined }] : [],
+    ),
+    pageUrl: `https://www.themoviedb.org/${category}/${id}`,
+  }
+}
+
+/** Synopsis, cast and crew for a TMDB id (one request), or null when TMDB no longer lists it. */
+export async function getTmdbInfo(token: string, category: 'movie' | 'tv', id: number, fetcher: Fetcher = fetch): Promise<TmdbInfo | null> {
+  needToken(token)
+  try {
+    return parseInfo(await getJson(fetcher, `${API}/${category}/${id}?language=en-US&append_to_response=credits`, auth(token)), category, id)
+  } catch (e) {
+    if (e instanceof LookupError && e.status === 404) return null
+    throw e
+  }
+}
+
+/**
+ * Reads a TMDB address (https://www.themoviedb.org/movie/348-alien) or a bare id.
+ * A bare id uses `fallback` as the kind. Returns null for anything else.
+ */
+export function parseTmdbLink(text: string, fallback: 'movie' | 'tv'): { category: 'movie' | 'tv'; id: number } | null {
+  const s = text.trim()
+  const m = /themoviedb\.org\/(movie|tv)\/(\d+)/i.exec(s)
+  if (m) return { category: m[1]!.toLowerCase() as 'movie' | 'tv', id: Number(m[2]) }
+  if (/^\d{1,9}$/.test(s) && Number(s) > 0) return { category: fallback, id: Number(s) }
+  return null
+}

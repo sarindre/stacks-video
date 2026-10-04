@@ -8,6 +8,7 @@ import type { Category, Item, Status } from '../../lib/types'
 import { useLibrary } from '../../hooks/useLibrary'
 import { btnPrimary, btnSecondary, chip, Dialog } from '../../components/ui'
 import { ScreenHelp } from '../../components/ScreenHelp'
+import { TmdbCredit } from '../../components/Attribution'
 import { BarcodeScanner, canScan } from '../add/BarcodeScanner'
 
 export interface AddRequest {
@@ -171,6 +172,7 @@ function Checker({ onClose, onOpenItem, onAdd }: Props) {
         </p>
       )}
       {resolved?.title && resolved.note && <p className="text-sm text-mute">{resolved.note}</p>}
+      {resolved?.title && <TmdbCredit compact />}
 
       {result?.verdict && (
         <div className="grid gap-3">

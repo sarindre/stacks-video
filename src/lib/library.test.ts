@@ -46,6 +46,24 @@ describe('normalizeItem', () => {
   })
 })
 
+describe('suggested tags in stored items', () => {
+  it('keeps suggestions apart from tags, distinguishing "none found" from "never suggested"', () => {
+    expect(make({ autoTags: ['Heist', 'spy'], removedTags: ['x'] }).autoTags).toEqual(['heist', 'spy'])
+    expect(make({ autoTags: [] }).autoTags).toEqual([])
+    expect(make({}).autoTags).toBeUndefined()
+    expect(make({}).removedTags).toBeUndefined()
+  })
+  it('combines suggestions and dismissals when importing, and a dismissal wins', () => {
+    const have = [make({ id: 'a', autoTags: ['heist', 'spy'], tags: ['mine'] })]
+    const plan = mergeLibraries(have, [make({ id: 'a', autoTags: ['heist', 'zombie'], removedTags: ['spy'] })])
+    const merged = plan.merged[0]!
+    expect(merged.tags).toEqual(['mine'])
+    expect(merged.autoTags).toEqual(['heist', 'zombie'])
+    expect(merged.removedTags).toEqual(['spy'])
+    expect(plan.updated).toBe(1)
+  })
+})
+
 describe('mergeLibraries', () => {
   it('adds new items and never deletes', () => {
     const have = [make({ id: 'a' })]

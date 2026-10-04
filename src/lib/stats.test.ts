@@ -50,6 +50,10 @@ describe('computeStats', () => {
     expect(v).toMatchObject({ estValue: 140, valuedCount: 3, valueChange: 10, changeCount: 2, wishlistTarget: 20, wishlistTargetCount: 2 })
     expect(v.mostValuable.map((i) => i.id)).toEqual(['c', 'a', 'b'])
   })
+  it('counts the most used tags, yours and suggested together', () => {
+    const s2 = computeStats([make({ id: 'a', tags: ['heist'], autoTags: ['spy'] }), make({ id: 'b', autoTags: ['heist', 'sample'] }), make({ id: 'w', status: 'wishlist', tags: ['heist'] })], now)
+    expect(s2.byTag).toEqual([{ label: 'heist', count: 2 }, { label: 'spy', count: 1 }])
+  })
   it('finds lent items and double copies', () => {
     expect(s.lent.map((i) => i.id)).toEqual(['3'])
     // Alien on Blu-ray, two plain DVDs and a special-features disc: only the two DVDs are duplicates.

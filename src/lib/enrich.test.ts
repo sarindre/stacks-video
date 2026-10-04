@@ -39,8 +39,8 @@ describe('pickBestMatch', () => {
 describe('patchFromMatch', () => {
   it('only fills gaps', () => {
     const it1 = item({ year: 1990, genre: 'Mine' })
-    expect(patchFromMatch(it1, r('X', 2001, 5))).toEqual({ posterUrl: 'http://p/5.jpg', ext: { tmdb: 5 } })
-    expect(patchFromMatch({ ...it1, posterUrl: 'http://own', ext: { tmdb: 5 } }, r('X', 2001, 5))).toBeNull()
+    expect(patchFromMatch(it1, r('X', 2001, 5), '2025-06-01')).toEqual({ posterUrl: 'http://p/5.jpg', ext: { tmdb: 5 }, tmdbAt: '2025-06-01' })
+    expect(patchFromMatch({ ...it1, posterUrl: 'http://own', ext: { tmdb: 5 } }, r('X', 2001, 5), '2025-06-01')).toBeNull()
   })
 })
 

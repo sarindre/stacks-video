@@ -35,6 +35,8 @@ Open the app, then **Settings** to paste a free TMDB token if you want movie/TV 
 - **Lending:** record who has something; a banner and red markers appear once it has been out longer than your limit (default 30 days, set in Settings). "Mark returned" clears it.
 - **Value:** enter what an item is worth today; Stats shows the total, the change against what you paid, and your most valuable items. Amounts are in USD.
 - **Tidy up:** rename or merge genres, locations, series and tags across everything at once (Settings).
+- **Synopsis and cast (movies and TV):** open an item and press *Synopsis and cast* to see the synopsis, director or creator, runtime and main cast from TMDB. It is looked up when you ask and never saved. If TMDB matched the wrong title, paste the right themoviedb.org address to fix the match.
+- **Suggested tags (movies and TV):** with a free TMDB token, titles get tags like *heist*, *time-travel* or *slasher* worked out from TMDB's genres and keywords, using a curated vocabulary of about 50. They show with a ✦, kept apart from your own tags; keep the ones you like or dismiss the rest (dismissed ones never come back). Search, a Tag filter and Top tags in Stats all use them. Settings can suggest tags for everything already matched, or remove them all.
 - **Series gaps:** for any series you have a film from, shows which other films in the franchise you are missing (from TMDB collections), flags unreleased ones separately, and adds missing ones to your wishlist in the format you usually own. Results are cached for 30 days.
 - **In stock?** A shop-friendly check in the header ("do I own this?"). Type a title or scan a barcode and get In stock / Not in stock, exactly where each copy lives, and format-aware answers ("you own it on DVD, not 4K"). Titles work offline.
 - **Binder view:** any location with positions like "Page 12 · C" shows as pages of pockets with the empty ones visible, a "where is…?" finder, and "add to next free pocket" that walks along the binder as you add several items.
@@ -53,7 +55,7 @@ Open the app, then **Settings** to paste a free TMDB token if you want movie/TV 
 | Games | [RAWG](https://rawg.io/apidocs) (title search only, no barcodes) | Yes, free. Create an account → API → copy the key into Settings |
 | Series / franchises | TMDB collections (same token) | See movies |
 
-This product uses the TMDB API but is not endorsed or certified by TMDB. The token is stored in this browser and only ever sent to TMDB. Disc barcodes are patchy for older titles; when one isn't found, search by title.
+This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB. The token is stored in this browser and only ever sent to TMDB. Disc barcodes are patchy for older titles; when one isn't found, search by title.
 
 ## Your data
 
@@ -113,3 +115,9 @@ The same app in its own window, for people who would rather not use a browser. I
 ## Deploying
 
 Pushing to `main` runs `.github/workflows/deploy.yml` (tests, build, publish to GitHub Pages). One-time setup: repo **Settings → Pages → Source: GitHub Actions**. The app uses relative paths, so it works under `/<repo>/`.
+
+## License
+
+[MIT](LICENSE). You can use, change, share and even sell this code; just keep the copyright notice. It covers the code and the app's own artwork (the icon and the store images). It does **not** change the terms of anything the app uses: TMDB's data and logo, RAWG, the fonts and the libraries keep their own licenses (see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)). Note that TMDB's terms still apply to anyone who runs the app with their own TMDB key, and treat an app that earns money as commercial.
+
+`legacy/` contains the original single-page app this grew from, under the same license.

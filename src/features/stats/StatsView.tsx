@@ -40,6 +40,7 @@ export function StatsView({ onOpen }: { onOpen: (i: Item) => void }) {
           <Bars rows={s.byFormat} />
         </Panel>
         <Panel title="Top genres">{s.byGenre.length ? <Bars rows={s.byGenre} /> : <Empty>Add genres to see them here.</Empty>}</Panel>
+        <Panel title="Top tags">{s.byTag.length ? <Bars rows={s.byTag} /> : <Empty>Tags you add, and ones suggested from TMDB, show up here.</Empty>}</Panel>
         <Panel title="Where it lives">{s.byLocation.length ? <Bars rows={s.byLocation} /> : <Empty>Add locations to see them here.</Empty>}</Panel>
       </div>
 

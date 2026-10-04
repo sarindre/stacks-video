@@ -39,9 +39,15 @@ export interface Item {
   rating: number
   notes?: string
   tags: string[]
+  /** Tags suggested from TMDB (see lib/autotags.ts). Kept apart from `tags` so they can be refreshed or removed without touching the person's own. `undefined` = never suggested; `[]` = suggested, nothing found. */
+  autoTags?: string[]
+  /** Suggestions the person dismissed, so a refresh never brings them back. */
+  removedTags?: string[]
   posterUrl?: string
   barcode?: string
   ext: ExternalIds
+  /** Local day the TMDB-derived details (poster link) were last fetched, so they can be refreshed in time. */
+  tmdbAt?: string
   price?: number
   /** Wishlist: the most you would pay. */
   targetPrice?: number

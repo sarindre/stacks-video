@@ -21,6 +21,9 @@ React 19, TypeScript (strict, `noUncheckedIndexedAccess`), Vite 7, Tailwind CSS 
 - Dates: a "day" is local `YYYY-MM-DD`. Never `new Date('YYYY-MM-DD')` (parsed as UTC); use `parseDay`/`dayKey`. Tests run in `America/Los_Angeles` to catch this.
 - CSV export prefixes cells starting with `= + - @` with `'` so spreadsheets don't run them as formulas; import strips it.
 
+## License
+MIT (`LICENSE`). Covers the code and the app's own artwork only; third-party data, logos and fonts keep their own terms (`THIRD_PARTY_NOTICES.md`). If a dependency with a copyleft license is ever added, check it (`npm run licenses` warns).
+
 ## Look and voice
 - **Identity:** "Stacks Video", tagline "Be kind, rewind." Corner-video-store look: charcoal and cream, signage red accent, yellow "rental sticker" for format badges, Bungee for the wordmark and big verdicts only, Barlow Condensed for headings (both self-hosted via `@fontsource`, so the app works offline). Icon: a VHS tape with a sticker (`public/icons/icon.svg`; the PNGs were rendered from it).
 - **Voice is light and never costs clarity.** Retro names are used for a few features: Rewind = undo, In stock? = "do I own this?", Coming soon = wishlist, Rented out / Overdue = lending. Anywhere the retro word could be unclear, the plain word sits beside it (tooltips, `aria-label`s such as "Rewind (undo)", and the help text, which stays plain and says both). Don't rename more features without the same care.
@@ -38,6 +41,17 @@ React 19, TypeScript (strict, `noUncheckedIndexedAccess`), Vite 7, Tailwind CSS 
 - The app is served from `app://stacksvideo/`, so its stored data is separate from the browser versions. Storage keys keep the old `shelfkeeper.` prefix there too.
 - Check changes with `npm run audit:desktop` (add `-- --packed=<exe>` for a built package). Building installers inside OneDrive can fail (file locks): build to a folder outside it. If Electron starts as plain Node, `ELECTRON_RUN_AS_NODE` is set (`npm run desktop` strips it).
 - `.github/workflows/desktop.yml` builds Windows, macOS and Linux installers plus the itch.io zip on a version tag, and pushes to itch.io once `BUTLER_API_KEY` and `ITCH_TARGET` are set.
+
+## TMDB's six-month rule
+TMDB's terms forbid caching its content for more than six months. The app keeps a deliberately small footprint of it (an id, a year, a genre label and a poster *link* per item; no descriptions, no image files except the offline cache) and enforces limits of about five months (`TMDB_MAX_AGE_DAYS`, `CACHE_PURGE_DAYS`, `MAX_COVER_AGE_MS` in the service worker). Anything that saves TMDB-derived details must set `tmdbAt` (see `patchFromMatch`, `wishlistItemFor`, the Add dialog); `lib/refresh.ts` refreshes by id and **must never overwrite anything the person typed**. If you start storing more TMDB content, extend these limits and their tests.
+
+## Suggested tags
+- Movies and TV can get tags suggested from TMDB genres and keywords: `lib/autotags.ts` (a curated `VOCABULARY` of phrase rules, `inferTags`, pure) and `lib/tags.ts` (`allTags`, keep/dismiss). Suggestions live in `autoTags`, **apart from the person's own `tags`**, so they can be refreshed or removed without touching what was typed; dismissed ones are remembered in `removedTags`. Anything that searches, filters or counts tags must use `allTags(item)`.
+- Only our own vocabulary is stored; the raw TMDB keywords and descriptions never are (six-month rule). Keywords arrive with the details in one request (`append_to_response=keywords`), and the same refresh pass (`lib/refresh.ts`) updates the poster link, the `tmdbAt` date and the suggestions. `autoTags === undefined` means never suggested; `[]` means suggested, nothing found.
+- To add a tag, add a rule to `VOCABULARY` (most specific first; the cap is `MAX_SUGGESTED`) and a test.
+
+## Title details (synopsis and cast)
+- `features/library/TitleDetails.tsx`, shown in `ItemDialog` for movie/TV items with a TMDB id. `getTmdbInfo` (`lib/lookup/tmdb.ts`) fetches overview, director/creator, runtime and top cast in one request (`append_to_response=credits`) **on demand, and keeps it in an in-memory `Map` only**. Never persist it (six-month rule). Always show `TmdbCredit` with it. The panel also lets the person correct a wrong match by pasting a themoviedb.org address (`parseTmdbLink`), which sets `ext.tmdb` (and category), refreshes `tmdbAt`, and clears `autoTags` so they are re-suggested; typed fields and the cover are never touched.
 
 ## Conventions
 - **Every change to the library goes through `commit()` in `useLibrary.tsx`** so it lands on the undo stack (`lib/history.ts`). Don't call `setItems` directly elsewhere. Pass a human label for bulk operations (`updateMany(patches, label)`, `addMany(items, label)`); big changes show the Undo toast.

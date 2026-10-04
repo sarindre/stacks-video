@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Check, X } from 'lucide-react'
 import { CATEGORIES, CATEGORY_ORDER, CONDITIONS, defaultFormat, formatLabel } from '../../lib/catalog'
 import { dayKey } from '../../lib/dates'
 import { distinct } from '../../lib/filters'
 import { findSameTitle, normalizeTags } from '../../lib/library'
+import { dismissSuggestion, keepSuggestion } from '../../lib/tags'
 import type { Category, Condition, Item, Priority } from '../../lib/types'
 import { Field, Stars } from '../../components/ui'
 
@@ -193,6 +194,24 @@ export function ItemForm({ draft, onChange, items, isNew }: Props) {
         <Field label="Tags" hint="Separate with commas">
           <TagsInput value={draft.tags} onChange={(tags) => set('tags', tags)} />
         </Field>
+        {draft.autoTags && draft.autoTags.length > 0 && (
+          <div className="grid gap-1.5" aria-label="Suggested tags">
+            <p className="text-xs text-mute">Suggested from TMDB. Keep the ones you like; dismiss the rest and they won't come back.</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {draft.autoTags.map((t) => (
+                <li key={t} className="inline-flex items-center overflow-hidden rounded-full border border-line bg-raised text-xs">
+                  <span className="px-2.5 py-1">✦ {t}</span>
+                  <button type="button" className="border-l border-line px-1.5 py-1 text-mute hover:text-good" aria-label={`Keep ${t} as my tag`} title="Keep as my tag" onClick={() => onChange({ ...draft, ...keepSuggestion(draft, t) })}>
+                    <Check size={12} />
+                  </button>
+                  <button type="button" className="border-l border-line px-1.5 py-1 text-mute hover:text-bad" aria-label={`Dismiss ${t}`} title="Dismiss" onClick={() => onChange({ ...draft, ...dismissSuggestion(draft, t) })}>
+                    <X size={12} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Field label="Notes">
           <textarea rows={3} value={draft.notes ?? ''} onChange={(e) => setText('notes')(e.target.value)} />
         </Field>

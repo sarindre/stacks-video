@@ -53,6 +53,8 @@ Everything stays in your browser. No account, no ads, no tracking, nothing uploa
 - **Binder view:** see your disc binder as real pages and pockets, with the empty ones visible and a "where is it?" finder.
 - **Every format:** movies, TV, games, music and books, with editions, condition, price paid and what it's worth today.
 - **Coming soon:** a wishlist with priorities, target prices and shop links.
+- **Synopsis and cast:** open any movie or show matched through TMDB to read the synopsis and see who is in it.
+- **Suggested tags:** with a free TMDB key, movies and TV get tags like heist, time-travel or slasher, kept separate from your own so you stay in control.
 - **Series gaps:** which films in a franchise you're missing.
 - **Lending:** who has what, and a reminder when something is overdue.
 - **Rewind:** undo anything, including a delete.
@@ -72,8 +74,12 @@ Everything stays in your browser. No account, no ads, no tracking, nothing uploa
 
 **About saving your data:** your collection is saved in your browser for this page. That's private, but it also means it can be lost if you clear your browser's site data, and on iPhone or iPad Safari may clear it after about a week away unless you add the page to your Home Screen. Use **Settings → Export backup** now and then. Inside itch.io's player, the automatic backup folder isn't available (the browser blocks it there); if downloads are blocked too, use **Copy backup as text**.
 
+![TMDB](https://raw.githubusercontent.com/sarindre/Blockbuster-App/main/docs/itch/tmdb-logo.png)
+
 *This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.*
 Privacy: https://github.com/sarindre/Blockbuster-App/blob/main/PRIVACY.md
+
+**Free and open source (MIT):** https://github.com/sarindre/Blockbuster-App
 
 ## Images
 All made from the real app with the built-in sample collection (no personal data) by `npm run store-assets`.
@@ -109,9 +115,13 @@ Tested by embedding the packaged app in a page on a different site (like itch do
 The app shows a one-time notice when it detects it is embedded, and a one-time notice on iPhone/iPad about Safari clearing data.
 
 ## Before going public
-- [ ] **Check the name.** "Stacks Video" has not been searched for trademark or existing apps. Search itch.io, app stores and the web, and check the domain.
-- [ ] Decide on a **license** for the code. (The repository has none yet, so by default all rights are reserved.) Update the page and `THIRD_PARTY_NOTICES.md` accordingly.
-- [ ] If the repository is public, link it on the page ("Source: ...") and confirm `legacy/` doesn't contain anything private (it holds the original movie list and an old Supabase publishable key).
+- [~] **Check the name.** A first pass was done on 2026-10-03 (web searches, itch.io search, DNS). This is **not a legal clearance**; the USPTO trademark database can't be searched this way, so do that yourself at https://tmsearch.uspto.gov before relying on the name.
+  - No app, itch.io project or trademark called exactly "Stacks Video" turned up.
+  - Close neighbours to be aware of: **Stacks** (the plain name) is used by a personal media/experience tracker on GitHub (`benjamintian2005/stacks`, MIT-0, a live Vercel site), a bookmark app on Google Play, a card-game series on itch.io (*Stacks:Space!* by Stacks:Engine), and the Stacks blockchain. That is why the name carries "Video" and the tagline; don't shorten it to just "Stacks" in the title (the install name is already "Stacks Video"; the short name for home screens is "Stacks").
+  - **Domains:** `stacksvideo.com` is already registered (it serves a blank page, so its owner is unknown). `.app`, `.net`, `.io`, `.org` and `stacks-video.com` had no DNS record (probably free, but check at a registrar).
+  - Still to do: the USPTO search, and the itch.io project URL `<you>.itch.io/stacks-video` is only claimable from your account.
+- [x] **License:** MIT (added 2026-10-03: `LICENSE`, `package.json`, README, About screen, notices). The page description says so.
+- [~] The repository **is public** (checked 2026-10-03), so link it on the page ("Source: https://github.com/sarindre/Blockbuster-App") (it is MIT-licensed now). `legacy/` holds the original **721-title movie list** and the old **Supabase publishable key** (`sb_publishable_…` for `prgivcziksnywptcuzoh.supabase.co`, in `legacy/index.html` and `legacy/manage.html`). Both are **already public** in `main`'s history, so removing the folder later hides nothing that's already out. What matters is the key: it is publishable (meant for browsers), but the old app added, edited and deleted rows with it, which implies the `movies` table allows public writes (the project's actual settings can't be seen from here). If you don't want strangers editing it, **check its row-level security, or delete that Supabase project** now that the app no longer uses it.
 - [ ] Push a version tag (or run the workflow by hand) and **try each installer from a fresh download**: Windows, macOS (Intel and Apple silicon if you can) and Linux.
 - [ ] Upload to a **Draft** page and run the checklist below on the real page.
 - [ ] Set the page to Public.

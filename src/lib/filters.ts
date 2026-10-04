@@ -1,5 +1,6 @@
 import { formatLabel } from './catalog'
 import { daysSince } from './dates'
+import { allTags } from './tags'
 import type { Category, Item } from './types'
 
 export type SortKey = 'title' | 'added' | 'year' | 'rating' | 'location' | 'priority' | 'value'
@@ -12,17 +13,18 @@ export interface Filters {
   format: string // 'all' or a format key
   genre: string // 'all' or a genre
   location: string // 'all' or a location
+  tag: string // 'all' or a tag (yours or suggested)
   /** all | unfinished | finished | favorite | lent */
   flag: 'all' | 'unfinished' | 'finished' | 'favorite' | 'lent'
 }
 
-export const DEFAULT_FILTERS: Filters = { q: '', category: 'all', format: 'all', genre: 'all', location: 'all', flag: 'all' }
+export const DEFAULT_FILTERS: Filters = { q: '', category: 'all', format: 'all', genre: 'all', location: 'all', tag: 'all', flag: 'all' }
 
 const fold = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
 
 function haystack(i: Item): string {
   return fold(
-    [i.title, i.series, i.creator, i.genre, i.edition, i.location, i.position, i.notes, i.barcode, i.lentTo, formatLabel(i.category, i.format), ...i.tags]
+    [i.title, i.series, i.creator, i.genre, i.edition, i.location, i.position, i.notes, i.barcode, i.lentTo, formatLabel(i.category, i.format), ...allTags(i)]
       .filter(Boolean)
       .join(' \n '),
   )
@@ -36,6 +38,7 @@ export function filterItems(items: Item[], status: ViewStatus, f: Filters): Item
     if (f.format !== 'all' && i.format !== f.format) return false
     if (f.genre !== 'all' && i.genre !== f.genre) return false
     if (f.location !== 'all' && i.location !== f.location) return false
+    if (f.tag !== 'all' && !allTags(i).includes(f.tag)) return false
     if (f.flag === 'unfinished' && i.finished) return false
     if (f.flag === 'finished' && !i.finished) return false
     if (f.flag === 'favorite' && !i.favorite) return false

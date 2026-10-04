@@ -24,7 +24,7 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done. Keep this file current: m
 
 ## For the itch.io release
 - [x] **16. itch.io package and page.** *(done 2026-10-03: pack script with checks, embedded-mode handling, sample collection, About/credits/TMDB notice, PRIVACY.md, third-party notices, cover and screenshots, docs/ITCH.md)*
-- [ ] **17. Pre-publish checks only a person can do:** trademark/domain check for "Stacks Video", choose a code license, run the real-page checklist in docs/ITCH.md.
+- [ ] **17. Pre-publish checks only a person can do:** USPTO trademark search and domain for "Stacks Video" (a first pass is recorded in docs/ITCH.md; MIT license is done), check or delete the old Supabase project, run the real-page checklist in docs/ITCH.md.
 - [ ] **18. Barcode scanning on iPhone, Safari and Firefox.** They have no built-in `BarcodeDetector`, so the Scan button is hidden there. A small WASM scanner loaded only when Scan is tapped would fix it. *Most valuable remaining feature for the in-shop use case.*
 - [x] **19. Desktop app (Electron).** *(done 2026-10-03: ported from HorrorHub; Windows installer built and the packaged app passes the 21-check audit. macOS and Linux installers are built by the GitHub workflow and are NOT yet verified. Unsigned, so first run needs the right-click → Open route; the unsigned macOS arm64 case is the main unknown)*
 - [ ] **19b. Code signing** for Windows (SmartScreen) and macOS (Gatekeeper, notarization), and automatic updates.
@@ -34,6 +34,13 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done. Keep this file current: m
 
 ## Bigger decision
 - [ ] **15. Sync between devices.** Needs accounts and a backend (Supabase fits), which cuts against local-first. Only if sharing one collection across phone and computer is really wanted. Cheaper alternative: folder backup (1) plus import.
+
+- [x] **23. TMDB six-month rule.** *(done 2026-10-03: offline images and franchise results expire after ~5 months; items carry a "refreshed on" date; Settings can refresh poster links by id or remove them all; a reminder banner appears when details are getting old. Whether TMDB treats a user's saved collection entries as "cached content" is a legal question that has not been answered; this keeps the footprint minimal and the controls in the user's hands.)*
+
+- [x] **24. Suggested tags from TMDB (movies and TV).** *(done 2026-10-03: 50-tag curated vocabulary, kept apart from your own tags, keep/dismiss on each item, Tag filter, Top tags in Stats, bulk suggest in Settings.)*
+- [ ] **25. Suggested tags for games (RAWG tags), books (Open Library subjects) and music (MusicBrainz tags).** Same pattern; needs a vocabulary for each.
+
+- [x] **26. Synopsis and cast page for movies and TV** *(done 2026-10-03: "Synopsis and cast" panel on an item, fetched from TMDB on demand and never stored.)* Possible follow-ups: trailer link, where-to-watch.
 
 ## Known gaps (from earlier work)
 - Migrated items all show as added on the migration day, so "added per month" has one tall bar.

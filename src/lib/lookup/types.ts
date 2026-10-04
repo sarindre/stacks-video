@@ -27,6 +27,7 @@ export class LookupError extends Error {
   constructor(
     message: string,
     readonly kind: 'needs-token' | 'network' | 'rejected' | 'rate-limit',
+    readonly status?: number,
   ) {
     super(message)
   }
@@ -41,7 +42,7 @@ export async function getJson(fetcher: Fetcher, url: string, init?: RequestInit)
   }
   if (res.status === 401 || res.status === 403) throw new LookupError('The lookup service rejected the request. Check your key in Settings.', 'rejected')
   if (res.status === 429) throw new LookupError('Too many lookups right now. Try again in a minute.', 'rate-limit')
-  if (!res.ok) throw new LookupError(`The lookup service answered with an error (${res.status}).`, 'network')
+  if (!res.ok) throw new LookupError(`The lookup service answered with an error (${res.status}).`, 'network', res.status)
   try {
     return await res.json()
   } catch {
