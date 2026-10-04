@@ -46,4 +46,4 @@ Stacks Video has no accounts and collects no personal information. Lookups can r
 If this changes, the new version will be in this file in the repository, with the date.
 
 ## Contact
-Questions: open an issue at https://github.com/sarindre/Blockbuster-App/issues
+Questions: open an issue at https://github.com/sarindre/stacks-video/issues

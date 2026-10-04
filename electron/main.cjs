@@ -9,7 +9,7 @@ const { APP_SCHEME, appUrl, isAppUrl, isSafeExternal, permissionAllowed, resolve
 
 const DIST = path.join(__dirname, "..", "dist");
 const DEV_URL = process.env.STACKSVIDEO_URL || ""; // optional: point the window at a running dev server
-const PROJECT_URL = "https://github.com/sarindre/Blockbuster-App";
+const PROJECT_URL = "https://github.com/sarindre/stacks-video";
 
 protocol.registerSchemesAsPrivileged([{ scheme: APP_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
 

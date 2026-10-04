@@ -44,7 +44,7 @@
   },
   "main": "electron/main.cjs",
   "author": "sarindre",
-  "homepage": "https://github.com/sarindre/Blockbuster-App",
+  "homepage": "https://github.com/sarindre/stacks-video",
   "build": {
     "appId": "com.sarindre.stacksvideo",
     "productName": "Stacks Video",

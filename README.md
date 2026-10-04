@@ -82,7 +82,7 @@ What the converter does: binder page and slot become *location* "Main binder" an
 
 The same app in its own window, for people who would rather not use a browser. It works offline and keeps your data on your computer, and unlike the browser version inside itch.io's player it can use the **automatic backup folder** and plain file downloads. It's built with Electron: `electron/` is a small shell around the built web app, served from its own `app://stacksvideo/` address, with links opened in your normal browser and nothing else allowed to load. The only permissions it grants are copy-to-clipboard, choosing a backup folder, and the **camera** (for barcode scanning; never the microphone).
 
-- **Get it:** installers for each system are attached to a [GitHub Release](https://github.com/sarindre/Blockbuster-App/releases) when a version tag (such as `v0.1.0`) is pushed, built by `.github/workflows/desktop.yml`. They can also be pushed to itch.io (see [docs/ITCH.md](docs/ITCH.md)).
+- **Get it:** installers for each system are attached to a [GitHub Release](https://github.com/sarindre/stacks-video/releases) when a version tag (such as `v0.1.0`) is pushed, built by `.github/workflows/desktop.yml`. They can also be pushed to itch.io (see [docs/ITCH.md](docs/ITCH.md)).
 - **Unsigned for now,** so your system will warn on first run. Windows: "More info", then "Run anyway". macOS: right-click the app, choose Open, then confirm (or System Settings → Privacy & Security → "Open Anyway"). Linux: `chmod +x StacksVideo-*.AppImage`, then run it.
 - **Its data is separate** from the browser versions (each keeps its own collection). Move between them with Export and Import.
 - **No automatic updates.** Download a newer installer to update; your data stays.
