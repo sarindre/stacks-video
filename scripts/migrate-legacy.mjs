@@ -1,6 +1,6 @@
 // Converts the old single-page "Family Movie Vault" data into a Stacks Video backup file.
 //
-//   npm run migrate:legacy                 -> migration/blockbuster-collection.json
+//   npm run migrate:legacy                 -> migration/stacks-video-collection.json
 //   npm run migrate:legacy -- --supabase   -> also pulls movies added through the old Cloud Manager
 //
 // Then in the app: Settings -> Import -> choose that file. Ids are stable (legacy-dvd-<page>-<slot>),
@@ -167,7 +167,7 @@ if (process.argv.includes('--supabase')) {
 const file = { app: 'stacks-video', version: 1, exportedAt: new Date().toISOString(), items }
 const outDir = path.join(root, 'migration')
 fs.mkdirSync(outDir, { recursive: true })
-const out = path.join(outDir, 'blockbuster-collection.json')
+const out = path.join(outDir, 'stacks-video-collection.json')
 fs.writeFileSync(out, JSON.stringify(file, null, 2))
 
 // Same columns as the app's CSV export (src/lib/csv.ts), for spreadsheet editing or a CSV import.
@@ -183,7 +183,7 @@ const cell = (v) => {
   return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
 }
 const csv = [COLS.map(([h]) => h).join(','), ...items.map((i) => COLS.map(([, k]) => cell(i[k])).join(','))].join('\r\n') + '\r\n'
-const csvOut = path.join(outDir, 'blockbuster-collection.csv')
+const csvOut = path.join(outDir, 'stacks-video-collection.csv')
 fs.writeFileSync(csvOut, '﻿' + csv)
 console.log(`Wrote ${path.relative(root, csvOut)}`)
 

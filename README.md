@@ -74,7 +74,7 @@ npm run migrate:legacy                  # binder + Prime list
 npm run migrate:legacy -- --supabase    # also pulls movies added through the old Cloud Manager
 ```
 
-That writes `migration/blockbuster-collection.json` (git-ignored, since it is a personal list). In the app: **Settings → Import** and choose that file. Ids are stable, so importing again changes nothing.
+That writes `migration/stacks-video-collection.json` (git-ignored, since it is a personal list). In the app: **Settings → Import** and choose that file. Ids are stable, so importing again changes nothing.
 
 What the converter does: binder page and slot become *location* "Main binder" and *position* "Page 12 · C"; Prime titles become *Digital* items at "Prime Video"; `SF` becomes a "Special features disc" edition; `BR`/`DVD` suffixes set the format; abbreviations (`HP:`, `LoR:`, `PotC:`) are spelled out; the old franchise "genres" are split into a real genre plus a series.
 
