@@ -48,7 +48,7 @@
   "build": {
     "appId": "com.sarindre.stacksvideo",
     "productName": "Stacks Video",
-    "copyright": "Stacks Video",
+    "copyright": "Copyright \u00a9 2026 sarindre. MIT License.",
     "artifactName": "StacksVideo-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "release",
@@ -103,5 +103,6 @@
     "electronLanguages": [
       "en-US"
     ]
-  }
+  },
+  "license": "MIT"
 }
